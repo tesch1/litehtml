@@ -82,10 +82,10 @@ namespace litehtml
 		int								width() const;
 		int								height() const;
 		void							add_stylesheet(const tchar_t* str, const tchar_t* baseurl, const tchar_t* media);
-		bool							on_mouse_over(int x, int y, int client_x, int client_y, position::vector& redraw_boxes);
-		bool							on_lbutton_down(int x, int y, int client_x, int client_y, position::vector& redraw_boxes);
-		bool							on_lbutton_up(int x, int y, int client_x, int client_y, position::vector& redraw_boxes);
-		bool							on_mouse_leave(position::vector& redraw_boxes);
+		void							on_mouse_over(int x, int y, int client_x, int client_y);
+		void							on_lbutton_down(int x, int y, int client_x, int client_y);
+		void							on_lbutton_up(int x, int y, int client_x, int client_y);
+		void							on_mouse_leave();
 		litehtml::element::ptr			create_element(const tchar_t* tag_name, const string_map& attributes);
 		element::ptr					root();
 		void							get_fixed_boxes(position::vector& fixed_boxes);

@@ -60,6 +60,7 @@ namespace litehtml
 
 		virtual void				get_media_features(litehtml::media_features& media) const = 0;
 		virtual void				get_language(litehtml::tstring& language, litehtml::tstring & culture) const = 0;
+		virtual void				redraw(const position::vector& redraw_boxes) = 0;
 	};
 
 	void trim(tstring &s);

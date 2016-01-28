@@ -162,6 +162,27 @@
     <ClCompile Include="utf8_strings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="box_model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="box_block_with_inlines.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="box_inline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="box_element.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="box_table.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="box_block.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="box_block_with_blocks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="attributes.h">
@@ -349,6 +370,27 @@
     </ClInclude>
     <ClInclude Include="gumbo\tag_strings.h">
       <Filter>Header Files\gumbo</Filter>
+    </ClInclude>
+    <ClInclude Include="box_model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="box_block_with_inlines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="box_element.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="box_inline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="box_table.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="box_block.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="box_block_with_blocks.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

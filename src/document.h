@@ -3,6 +3,7 @@
 #include "types.h"
 #include "context.h"
 #include "gumbo/gumbo.h"
+#include "box_model.h"
 
 namespace litehtml
 {
@@ -54,6 +55,7 @@ namespace litehtml
 		typedef std::weak_ptr<document>		weak_ptr;
 	private:
 		std::shared_ptr<element>			m_root;
+		std::shared_ptr<box_model::box_base>	m_root_box;
 		document_container*					m_container;
 		fonts_map							m_fonts;
 		css_text::vector					m_css;
@@ -107,6 +109,7 @@ namespace litehtml
 		void fix_tables_layout();
 		void fix_table_children(element::ptr& el_ptr, style_display disp, const tchar_t* disp_str);
 		void fix_table_parent(element::ptr& el_ptr, style_display disp, const tchar_t* disp_str);
+		void create_box_model();
 	};
 
 	inline element::ptr document::root()

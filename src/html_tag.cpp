@@ -287,7 +287,7 @@ litehtml::uint_ptr litehtml::html_tag::get_font(font_metrics* fm)
 	return m_font;
 }
 
-const litehtml::tchar_t* litehtml::html_tag::get_style_property( const tchar_t* name, bool inherited, const tchar_t* def /*= 0*/ )
+const litehtml::tchar_t* litehtml::html_tag::get_style_property( const tchar_t* name, bool inherited, const tchar_t* def /*= 0*/ ) const
 {
 	const tchar_t* ret = m_style.get_property(name);
 	element::ptr el_parent = parent();
@@ -313,7 +313,7 @@ void litehtml::html_tag::parse_styles(bool is_reparse)
 
 	if(style)
 	{
-		m_style.add(style, NULL);
+		m_style.add(style, nullptr);
 	}
 
 	init_font();
@@ -375,95 +375,18 @@ void litehtml::html_tag::parse_styles(bool is_reparse)
 
 	m_css_text_indent.fromString(	get_style_property(_t("text-indent"),	true,	_t("0")),	_t("0"));
 
-	m_css_width.fromString(			get_style_property(_t("width"),			false,	_t("auto")), _t("auto"));
-	m_css_height.fromString(		get_style_property(_t("height"),		false,	_t("auto")), _t("auto"));
+	m_css_width = get_raw_css_width(doc);
+	m_css_height = get_raw_css_height(doc);
+	m_css_min_width = get_raw_css_min_width(doc);
+	m_css_min_height = get_raw_css_min_height(doc);
+	m_css_max_width = get_raw_css_max_width(doc);
+	m_css_max_height = get_raw_css_max_height(doc);
+	m_css_offsets = get_raw_css_offset(doc);
+	m_css_margins = get_raw_css_margin(doc);
+	m_css_padding = get_raw_css_padding(doc);
+	m_css_borders = get_raw_css_border(doc);
 
-	doc->cvt_units(m_css_width, m_font_size);
-	doc->cvt_units(m_css_height, m_font_size);
-
-	m_css_min_width.fromString(		get_style_property(_t("min-width"),		false,	_t("0")));
-	m_css_min_height.fromString(	get_style_property(_t("min-height"),		false,	_t("0")));
-
-	m_css_max_width.fromString(		get_style_property(_t("max-width"),		false,	_t("none")),	_t("none"));
-	m_css_max_height.fromString(	get_style_property(_t("max-height"),		false,	_t("none")),	_t("none"));
-	
-	doc->cvt_units(m_css_min_width, m_font_size);
-	doc->cvt_units(m_css_min_height, m_font_size);
-
-	m_css_offsets.left.fromString(		get_style_property(_t("left"),				false,	_t("auto")), _t("auto"));
-	m_css_offsets.right.fromString(		get_style_property(_t("right"),				false,	_t("auto")), _t("auto"));
-	m_css_offsets.top.fromString(		get_style_property(_t("top"),				false,	_t("auto")), _t("auto"));
-	m_css_offsets.bottom.fromString(	get_style_property(_t("bottom"),			false,	_t("auto")), _t("auto"));
-
-	doc->cvt_units(m_css_offsets.left, m_font_size);
-	doc->cvt_units(m_css_offsets.right, m_font_size);
-	doc->cvt_units(m_css_offsets.top,		m_font_size);
-	doc->cvt_units(m_css_offsets.bottom,	m_font_size);
-
-	m_css_margins.left.fromString(		get_style_property(_t("margin-left"),		false,	_t("0")), _t("auto"));
-	m_css_margins.right.fromString(		get_style_property(_t("margin-right"),		false,	_t("0")), _t("auto"));
-	m_css_margins.top.fromString(		get_style_property(_t("margin-top"),			false,	_t("0")), _t("auto"));
-	m_css_margins.bottom.fromString(	get_style_property(_t("margin-bottom"),		false,	_t("0")), _t("auto"));
-
-	m_css_padding.left.fromString(		get_style_property(_t("padding-left"),		false,	_t("0")), _t(""));
-	m_css_padding.right.fromString(		get_style_property(_t("padding-right"),		false,	_t("0")), _t(""));
-	m_css_padding.top.fromString(		get_style_property(_t("padding-top"),		false,	_t("0")), _t(""));
-	m_css_padding.bottom.fromString(	get_style_property(_t("padding-bottom"),		false,	_t("0")), _t(""));
-
-	m_css_borders.left.width.fromString(	get_style_property(_t("border-left-width"),		false,	_t("medium")), border_width_strings);
-	m_css_borders.right.width.fromString(	get_style_property(_t("border-right-width"),		false,	_t("medium")), border_width_strings);
-	m_css_borders.top.width.fromString(		get_style_property(_t("border-top-width"),		false,	_t("medium")), border_width_strings);
-	m_css_borders.bottom.width.fromString(	get_style_property(_t("border-bottom-width"),	false,	_t("medium")), border_width_strings);
-
-	m_css_borders.left.color = web_color::from_string(get_style_property(_t("border-left-color"),	false,	_t("")));
-	m_css_borders.left.style = (border_style) value_index(get_style_property(_t("border-left-style"), false, _t("none")), border_style_strings, border_style_none);
-
-	m_css_borders.right.color = web_color::from_string(get_style_property(_t("border-right-color"),	false,	_t("")));
-	m_css_borders.right.style = (border_style) value_index(get_style_property(_t("border-right-style"), false, _t("none")), border_style_strings, border_style_none);
-
-	m_css_borders.top.color = web_color::from_string(get_style_property(_t("border-top-color"),	false,	_t("")));
-	m_css_borders.top.style = (border_style) value_index(get_style_property(_t("border-top-style"), false, _t("none")), border_style_strings, border_style_none);
-
-	m_css_borders.bottom.color = web_color::from_string(get_style_property(_t("border-bottom-color"),	false,	_t("")));
-	m_css_borders.bottom.style = (border_style) value_index(get_style_property(_t("border-bottom-style"), false, _t("none")), border_style_strings, border_style_none);
-
-	m_css_borders.radius.top_left_x.fromString(get_style_property(_t("border-top-left-radius-x"), false, _t("0")));
-	m_css_borders.radius.top_left_y.fromString(get_style_property(_t("border-top-left-radius-y"), false, _t("0")));
-
-	m_css_borders.radius.top_right_x.fromString(get_style_property(_t("border-top-right-radius-x"), false, _t("0")));
-	m_css_borders.radius.top_right_y.fromString(get_style_property(_t("border-top-right-radius-y"), false, _t("0")));
-
-	m_css_borders.radius.bottom_right_x.fromString(get_style_property(_t("border-bottom-right-radius-x"), false, _t("0")));
-	m_css_borders.radius.bottom_right_y.fromString(get_style_property(_t("border-bottom-right-radius-y"), false, _t("0")));
-
-	m_css_borders.radius.bottom_left_x.fromString(get_style_property(_t("border-bottom-left-radius-x"), false, _t("0")));
-	m_css_borders.radius.bottom_left_y.fromString(get_style_property(_t("border-bottom-left-radius-y"), false, _t("0")));
-
-	doc->cvt_units(m_css_borders.radius.bottom_left_x,			m_font_size);
-	doc->cvt_units(m_css_borders.radius.bottom_left_y,			m_font_size);
-	doc->cvt_units(m_css_borders.radius.bottom_right_x,			m_font_size);
-	doc->cvt_units(m_css_borders.radius.bottom_right_y,			m_font_size);
-	doc->cvt_units(m_css_borders.radius.top_left_x,				m_font_size);
-	doc->cvt_units(m_css_borders.radius.top_left_y,				m_font_size);
-	doc->cvt_units(m_css_borders.radius.top_right_x,				m_font_size);
-	doc->cvt_units(m_css_borders.radius.top_right_y,				m_font_size);
-
-	doc->cvt_units(m_css_text_indent,								m_font_size);
-
-	m_margins.left		= doc->cvt_units(m_css_margins.left,		m_font_size);
-	m_margins.right		= doc->cvt_units(m_css_margins.right,		m_font_size);
-	m_margins.top		= doc->cvt_units(m_css_margins.top,		m_font_size);
-	m_margins.bottom	= doc->cvt_units(m_css_margins.bottom,	m_font_size);
-
-	m_padding.left		= doc->cvt_units(m_css_padding.left,		m_font_size);
-	m_padding.right		= doc->cvt_units(m_css_padding.right,		m_font_size);
-	m_padding.top		= doc->cvt_units(m_css_padding.top,		m_font_size);
-	m_padding.bottom	= doc->cvt_units(m_css_padding.bottom,	m_font_size);
-
-	m_borders.left		= doc->cvt_units(m_css_borders.left.width,	m_font_size);
-	m_borders.right		= doc->cvt_units(m_css_borders.right.width,	m_font_size);
-	m_borders.top		= doc->cvt_units(m_css_borders.top.width,		m_font_size);
-	m_borders.bottom	= doc->cvt_units(m_css_borders.bottom.width,	m_font_size);
+	doc->cvt_units(m_css_text_indent, m_font_size);
 
 	css_length line_height;
 	line_height.fromString(get_style_property(_t("line-height"),	true,	_t("normal")), _t("normal"));
@@ -480,7 +403,6 @@ void litehtml::html_tag::parse_styles(bool is_reparse)
 		m_line_height =  doc->cvt_units(line_height,	m_font_size, m_font_size);
 		m_lh_predefined = false;
 	}
-
 
 	if(m_display == display_list_item)
 	{

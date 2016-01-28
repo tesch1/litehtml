@@ -26,6 +26,7 @@
 #include <algorithm>
 #include "gumbo/gumbo.h"
 #include "utf8_strings.h"
+#include "box_model.h"
 
 litehtml::document::document(litehtml::document_container* objContainer, litehtml::context* ctx)
 {
@@ -119,8 +120,11 @@ litehtml::document::ptr litehtml::document::createFromUTF8(const char* str, lite
 		// and create the anonymous boxes in visual table layout
 		doc->fix_tables_layout();
 
-		// Fanaly initialize elements
+		// Initialize elements
 		doc->m_root->init();
+
+		// Create CSS Box model
+		doc->create_box_model();
 	}
 
 	return doc;
@@ -258,14 +262,19 @@ litehtml::uint_ptr litehtml::document::get_font( const tchar_t* name, int size, 
 int litehtml::document::render( int max_width, render_type rt )
 {
 	int ret = 0;
-	if(m_root)
+	if(m_root_box)
 	{
 		if(rt == render_fixed_only)
 		{
+/*
 			m_fixed_boxes.clear();
 			m_root->render_positioned(rt);
+*/
 		} else
 		{
+			ret = m_root_box->render(0, 0, max_width);
+
+/*
 			ret = m_root->render(0, 0, max_width);
 			if(m_root->fetch_positioned())
 			{
@@ -275,6 +284,7 @@ int litehtml::document::render( int max_width, render_type rt )
 			m_size.width	= 0;
 			m_size.height	= 0;
 			m_root->calc_document_size(m_size);
+*/
 		}
 	}
 	return ret;
@@ -282,10 +292,10 @@ int litehtml::document::render( int max_width, render_type rt )
 
 void litehtml::document::draw( uint_ptr hdc, int x, int y, const position* clip )
 {
-	if(m_root)
+	if(m_root_box)
 	{
-		m_root->draw(hdc, x, y, clip);
-		m_root->draw_stacking_context(hdc, x, y, clip, true);
+		m_root_box->draw(hdc, x, y, clip);
+		m_root_box->draw_stacking_context(hdc, x, y, clip, true);
 	}
 }
 
@@ -925,5 +935,13 @@ void litehtml::document::fix_table_parent(element::ptr& el_ptr, style_display di
 			first = parent->m_children.erase(first, last + 1);
 			parent->m_children.insert(first, annon_tag);
 		}
+	}
+}
+
+void litehtml::document::create_box_model()
+{
+	if (m_root)
+	{
+		m_root_box = box_model::box_base::create_box(m_root, shared_from_this());
 	}
 }

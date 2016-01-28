@@ -301,7 +301,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="background.cpp" />
+    <ClCompile Include="box_block.cpp" />
+    <ClCompile Include="box_block_with_blocks.cpp" />
+    <ClCompile Include="box_element.cpp" />
+    <ClCompile Include="box_inline.cpp" />
+    <ClCompile Include="box_model.cpp" />
     <ClCompile Include="box.cpp" />
+    <ClCompile Include="box_table.cpp" />
     <ClCompile Include="context.cpp" />
     <ClCompile Include="css_length.cpp" />
     <ClCompile Include="css_selector.cpp" />
@@ -340,6 +346,7 @@
     <ClCompile Include="gumbo\vector.c" />
     <ClCompile Include="html.cpp" />
     <ClCompile Include="html_tag.cpp" />
+    <ClCompile Include="box_block_with_inlines.cpp" />
     <ClCompile Include="iterators.cpp" />
     <ClCompile Include="media_query.cpp" />
     <ClCompile Include="style.cpp" />
@@ -351,8 +358,13 @@
   <ItemGroup>
     <ClInclude Include="attributes.h" />
     <ClInclude Include="background.h" />
+    <ClInclude Include="box_block.h" />
+    <ClInclude Include="box_block_with_blocks.h" />
     <ClInclude Include="borders.h" />
     <ClInclude Include="box.h" />
+    <ClInclude Include="box_inline.h" />
+    <ClInclude Include="box_model.h" />
+    <ClInclude Include="box_table.h" />
     <ClInclude Include="context.h" />
     <ClInclude Include="css_length.h" />
     <ClInclude Include="css_margins.h" />
@@ -361,6 +373,7 @@
     <ClInclude Include="css_selector.h" />
     <ClInclude Include="document.h" />
     <ClInclude Include="element.h" />
+    <ClInclude Include="box_element.h" />
     <ClInclude Include="el_anchor.h" />
     <ClInclude Include="el_base.h" />
     <ClInclude Include="el_before_after.h" />
@@ -402,6 +415,7 @@
     <ClInclude Include="gumbo\vector.h" />
     <ClInclude Include="html.h" />
     <ClInclude Include="html_tag.h" />
+    <ClInclude Include="box_block_with_inlines.h" />
     <ClInclude Include="iterators.h" />
     <ClInclude Include="media_query.h" />
     <ClInclude Include="os_types.h" />

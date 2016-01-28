@@ -2,6 +2,7 @@
 #include <memory>
 #include "stylesheet.h"
 #include "css_offsets.h"
+#include "css_margins.h"
 
 namespace litehtml
 {
@@ -35,6 +36,8 @@ namespace litehtml
 
 		// returns refer to m_pos member;
 		position&					get_position();
+
+		const elements_vector&		get_children() const;
 
 		int							left()						const;
 		int							right()						const;
@@ -86,6 +89,18 @@ namespace litehtml
 		int							get_inline_shift_left();
 		int							get_inline_shift_right();
 		void						apply_relative_shift(int parent_width);
+		void						set_pos(position& pos);
+
+		css_length					get_raw_css_width(const std::shared_ptr<document>& doc) const;
+		css_length					get_raw_css_height(const std::shared_ptr<document>& doc) const;
+		css_length					get_raw_css_min_width(const std::shared_ptr<document>& doc) const;
+		css_length					get_raw_css_min_height(const std::shared_ptr<document>& doc) const;
+		css_length					get_raw_css_max_width(const std::shared_ptr<document>& doc) const;
+		css_length					get_raw_css_max_height(const std::shared_ptr<document>& doc) const;
+		css_offsets					get_raw_css_offset(const std::shared_ptr<document>& doc) const;
+		css_margins					get_raw_css_margin(const std::shared_ptr<document>& doc) const;
+		css_margins					get_raw_css_padding(const std::shared_ptr<document>& doc) const;
+		css_borders					get_raw_css_border(const std::shared_ptr<document>& doc) const;
 
 		std::shared_ptr<document>	get_document() const;
 
@@ -156,7 +171,7 @@ namespace litehtml
 		virtual void				parse_styles(bool is_reparse = false);
 		virtual void				draw(uint_ptr hdc, int x, int y, const position* clip);
 		virtual void				draw_background( uint_ptr hdc, int x, int y, const position* clip );
-		virtual const tchar_t*		get_style_property(const tchar_t* name, bool inherited, const tchar_t* def = 0);
+		virtual const tchar_t*		get_style_property(const tchar_t* name, bool inherited, const tchar_t* def = 0) const;
 		virtual uint_ptr			get_font(font_metrics* fm = 0);
 		virtual int					get_font_size() const;
 		virtual void				get_text(tstring& text);
@@ -395,5 +410,15 @@ namespace litehtml
 	inline std::shared_ptr<document> element::get_document() const
 	{
 		return m_doc.lock();
+	}
+
+	inline const elements_vector& element::get_children() const
+	{
+		return m_children;
+	}
+
+	inline void element::set_pos(position& pos)
+	{
+		m_pos = pos;
 	}
 }

@@ -164,7 +164,7 @@ namespace litehtml
 		virtual void				draw(uint_ptr hdc, int x, int y, const position* clip) override;
 		virtual void				draw_background(uint_ptr hdc, int x, int y, const position* clip) override;
 
-		virtual const tchar_t*		get_style_property(const tchar_t* name, bool inherited, const tchar_t* def = 0) override;
+		virtual const tchar_t*		get_style_property(const tchar_t* name, bool inherited, const tchar_t* def = 0) const override;
 		virtual uint_ptr			get_font(font_metrics* fm = 0) override;
 		virtual int					get_font_size() const override;
 

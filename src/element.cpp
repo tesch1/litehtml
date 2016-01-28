@@ -310,6 +310,179 @@ void litehtml::element::apply_relative_shift(int parent_width)
 	}
 }
 
+litehtml::css_length litehtml::element::get_raw_css_width(const std::shared_ptr<document>& doc) const
+{
+	css_length val;
+	val.fromString(get_style_property(_t("width"), false, _t("auto")), _t("auto"));
+	if (doc)
+	{
+		doc->cvt_units(val, get_font_size());
+	}
+	return val;
+}
+
+litehtml::css_length litehtml::element::get_raw_css_height(const std::shared_ptr<document>& doc) const
+{
+	css_length val;
+	val.fromString(get_style_property(_t("height"), false, _t("auto")), _t("auto"));
+	if (doc)
+	{
+		doc->cvt_units(val, get_font_size());
+	}
+	return val;
+}
+
+litehtml::css_length litehtml::element::get_raw_css_min_width(const std::shared_ptr<document>& doc) const
+{
+	css_length val;
+	val.fromString(get_style_property(_t("min-width"), false, _t("0")));
+	if (doc)
+	{
+		doc->cvt_units(val, get_font_size());
+	}
+	return val;
+}
+
+litehtml::css_length litehtml::element::get_raw_css_min_height(const std::shared_ptr<document>& doc) const
+{
+	css_length val;
+	val.fromString(get_style_property(_t("min-height"), false, _t("0")));
+	if (doc)
+	{
+		doc->cvt_units(val, get_font_size());
+	}
+	return val;
+}
+
+litehtml::css_length litehtml::element::get_raw_css_max_height(const std::shared_ptr<document>& doc) const
+{
+	css_length val;
+	val.fromString(get_style_property(_t("max-height"), false, _t("none")), _t("none"));
+	if (doc)
+	{
+		doc->cvt_units(val, get_font_size());
+	}
+	return val;
+}
+
+litehtml::css_length litehtml::element::get_raw_css_max_width(const std::shared_ptr<document>& doc) const
+{
+	css_length val;
+	val.fromString(get_style_property(_t("max-width"), false, _t("none")), _t("none"));
+	if (doc)
+	{
+		doc->cvt_units(val, get_font_size());
+	}
+	return val;
+}
+
+litehtml::css_offsets litehtml::element::get_raw_css_offset(const std::shared_ptr<document>& doc) const
+{
+	css_offsets val;
+	val.left.fromString(get_style_property(_t("left"), false, _t("auto")), _t("auto"));
+	val.right.fromString(get_style_property(_t("right"), false, _t("auto")), _t("auto"));
+	val.top.fromString(get_style_property(_t("top"), false, _t("auto")), _t("auto"));
+	val.bottom.fromString(get_style_property(_t("bottom"), false, _t("auto")), _t("auto"));
+	if (doc)
+	{
+		int font_size = get_font_size();
+		doc->cvt_units(val.left, font_size);
+		doc->cvt_units(val.right, font_size);
+		doc->cvt_units(val.top, font_size);
+		doc->cvt_units(val.bottom, font_size);
+	}
+	return val;
+}
+
+litehtml::css_margins litehtml::element::get_raw_css_margin(const std::shared_ptr<document>& doc) const
+{
+	css_margins val;
+	val.left.fromString(get_style_property(_t("margin-left"), false, _t("0")), _t("auto"));
+	val.right.fromString(get_style_property(_t("margin-right"), false, _t("0")), _t("auto"));
+	val.top.fromString(get_style_property(_t("margin-top"), false, _t("0")), _t("auto"));
+	val.bottom.fromString(get_style_property(_t("margin-bottom"), false, _t("0")), _t("auto"));
+	if (doc)
+	{
+		int font_size = get_font_size();
+		doc->cvt_units(val.left, font_size);
+		doc->cvt_units(val.right, font_size);
+		doc->cvt_units(val.top, font_size);
+		doc->cvt_units(val.bottom, font_size);
+	}
+	return val;
+}
+
+litehtml::css_margins litehtml::element::get_raw_css_padding(const std::shared_ptr<document>& doc) const
+{
+	css_margins val;
+	val.left.fromString(get_style_property(_t("padding-left"), false, _t("0")), _t(""));
+	val.right.fromString(get_style_property(_t("padding-right"), false, _t("0")), _t(""));
+	val.top.fromString(get_style_property(_t("padding-top"), false, _t("0")), _t(""));
+	val.bottom.fromString(get_style_property(_t("padding-bottom"), false, _t("0")), _t(""));
+	if (doc)
+	{
+		int font_size = get_font_size();
+		doc->cvt_units(val.left, font_size);
+		doc->cvt_units(val.right, font_size);
+		doc->cvt_units(val.top, font_size);
+		doc->cvt_units(val.bottom, font_size);
+	}
+	return val;
+}
+
+litehtml::css_borders litehtml::element::get_raw_css_border(const std::shared_ptr<document>& doc) const
+{
+	css_borders val;
+	val.left.width.fromString(get_style_property(_t("border-left-width"), false, _t("medium")), border_width_strings);
+	val.right.width.fromString(get_style_property(_t("border-right-width"), false, _t("medium")), border_width_strings);
+	val.top.width.fromString(get_style_property(_t("border-top-width"), false, _t("medium")), border_width_strings);
+	val.bottom.width.fromString(get_style_property(_t("border-bottom-width"), false, _t("medium")), border_width_strings);
+
+	val.left.color = web_color::from_string(get_style_property(_t("border-left-color"), false, _t("")));
+	val.left.style = (border_style)value_index(get_style_property(_t("border-left-style"), false, _t("none")), border_style_strings, border_style_none);
+
+	val.right.color = web_color::from_string(get_style_property(_t("border-right-color"), false, _t("")));
+	val.right.style = (border_style)value_index(get_style_property(_t("border-right-style"), false, _t("none")), border_style_strings, border_style_none);
+
+	val.top.color = web_color::from_string(get_style_property(_t("border-top-color"), false, _t("")));
+	val.top.style = (border_style)value_index(get_style_property(_t("border-top-style"), false, _t("none")), border_style_strings, border_style_none);
+
+	val.bottom.color = web_color::from_string(get_style_property(_t("border-bottom-color"), false, _t("")));
+	val.bottom.style = (border_style)value_index(get_style_property(_t("border-bottom-style"), false, _t("none")), border_style_strings, border_style_none);
+
+	val.radius.top_left_x.fromString(get_style_property(_t("border-top-left-radius-x"), false, _t("0")));
+	val.radius.top_left_y.fromString(get_style_property(_t("border-top-left-radius-y"), false, _t("0")));
+
+	val.radius.top_right_x.fromString(get_style_property(_t("border-top-right-radius-x"), false, _t("0")));
+	val.radius.top_right_y.fromString(get_style_property(_t("border-top-right-radius-y"), false, _t("0")));
+
+	val.radius.bottom_right_x.fromString(get_style_property(_t("border-bottom-right-radius-x"), false, _t("0")));
+	val.radius.bottom_right_y.fromString(get_style_property(_t("border-bottom-right-radius-y"), false, _t("0")));
+
+	val.radius.bottom_left_x.fromString(get_style_property(_t("border-bottom-left-radius-x"), false, _t("0")));
+	val.radius.bottom_left_y.fromString(get_style_property(_t("border-bottom-left-radius-y"), false, _t("0")));
+
+	if (doc)
+	{
+		int font_size = get_font_size();
+		doc->cvt_units(val.left.width, font_size);
+		doc->cvt_units(val.right.width, font_size);
+		doc->cvt_units(val.top.width, font_size);
+		doc->cvt_units(val.bottom.width, font_size);
+
+		doc->cvt_units(val.radius.bottom_left_x, font_size);
+		doc->cvt_units(val.radius.bottom_left_y, font_size);
+		doc->cvt_units(val.radius.bottom_right_x, font_size);
+		doc->cvt_units(val.radius.bottom_right_y, font_size);
+		doc->cvt_units(val.radius.top_left_x, font_size);
+		doc->cvt_units(val.radius.top_left_y, font_size);
+		doc->cvt_units(val.radius.top_right_x, font_size);
+		doc->cvt_units(val.radius.top_right_y, font_size);
+	}
+
+	return val;
+}
+
 void litehtml::element::calc_auto_margins(int parent_width)							LITEHTML_EMPTY_FUNC
 const litehtml::background* litehtml::element::get_background(bool own_only)		LITEHTML_RETURN_FUNC(0)
 litehtml::element::ptr litehtml::element::get_element_by_point(int x, int y, int client_x, int client_y)	LITEHTML_RETURN_FUNC(0)
@@ -396,7 +569,7 @@ bool litehtml::element::is_replaced() const											LITEHTML_RETURN_FUNC(false
 int litehtml::element::line_height() const											LITEHTML_RETURN_FUNC(0)
 void litehtml::element::draw( uint_ptr hdc, int x, int y, const position* clip )	LITEHTML_EMPTY_FUNC
 void litehtml::element::draw_background( uint_ptr hdc, int x, int y, const position* clip )	LITEHTML_EMPTY_FUNC
-const litehtml::tchar_t* litehtml::element::get_style_property( const tchar_t* name, bool inherited, const tchar_t* def /*= 0*/ )	LITEHTML_RETURN_FUNC(0)
+const litehtml::tchar_t* litehtml::element::get_style_property( const tchar_t* name, bool inherited, const tchar_t* def /*= 0*/ ) const	LITEHTML_RETURN_FUNC(0)
 litehtml::uint_ptr litehtml::element::get_font( font_metrics* fm /*= 0*/ )			LITEHTML_RETURN_FUNC(0)
 int litehtml::element::get_font_size()	const										LITEHTML_RETURN_FUNC(0)
 void litehtml::element::get_text( tstring& text )									LITEHTML_EMPTY_FUNC

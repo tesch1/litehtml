@@ -48,7 +48,7 @@ namespace litehtml
 			void draw_stacking_context(uint_ptr hdc, int x, int y, const position* clip, bool with_positioned);
 			void draw(uint_ptr hdc, int x, int y, const position* clip);
 			box_base::ptr get_parent() const;
-			int get_element_content_size(litehtml::size& sz, int max_width);
+			void get_element_content_size(litehtml::size& sz, int max_width) const;
 
 			int top() const;
 			int left() const;
@@ -62,14 +62,28 @@ namespace litehtml
 			int content_right() const;
 			int content_width() const;
 			int content_height() const;
-			
+
+			int content_margins_top() const;
+			int content_margins_left() const;
+			int content_margins_bottom() const;
+			int content_margins_right() const;
+
 			const margins& get_margins() const;
 			const margins& get_paddings() const;
 			const margins& get_borders() const;
 
 			void move(int dx, int dy);
+			void move_to(int x, int y);
 			void apply_relative_shift(int parent_width);
 			void fetch_by_type(box_type bt, box_base::vector& items);
+
+			bool is_white_space() const;
+			bool is_break() const;
+			int line_height() const;
+			uint_ptr get_font(font_metrics* fm = 0) const;
+			vertical_align get_vertical_align() const;
+
+			const tchar_t* get_style_property(const tchar_t* name, bool inherited, const tchar_t* def = 0) const;
 
 			virtual box_type get_type() const = 0;
 			virtual void add_box(const std::shared_ptr<box_base>& box) = 0;
@@ -82,8 +96,9 @@ namespace litehtml
 			virtual void draw_children(uint_ptr hdc, int x, int y, const position* clip, draw_flag flag, int zindex);
 			virtual bool is_flow_root() const;
 			virtual overflow get_overflow() const;
-			virtual void place_floated_box(const box_base::ptr& floaded_box, int x, int y);
+			virtual void place_floated_box(const box_base::ptr& box, int x, int y);
 			virtual int get_floats_height(element_float el_float = float_none) const;
+			virtual int get_base_line() const;
 
 		protected:
 			static box_base::ptr create_block_box(const std::shared_ptr<element>& el, const std::shared_ptr<document>& doc);
@@ -161,6 +176,22 @@ namespace litehtml
 			return m_pos.height;
 		}
 
+		inline int box_base::content_margins_top() const
+		{
+			return m_margins.top + m_padding.top + m_borders.top;
+		}
+		inline int box_base::content_margins_left() const
+		{
+			return m_margins.left + m_padding.left + m_borders.left;
+		}
+		inline int box_base::content_margins_bottom() const
+		{
+			return m_margins.bottom + m_padding.bottom + m_borders.bottom;
+		}
+		inline int box_base::content_margins_right() const
+		{
+			return m_margins.right + m_padding.right + m_borders.right;
+		}
 
 		inline const margins& box_base::get_margins() const
 		{
@@ -186,6 +217,12 @@ namespace litehtml
 		{
 			m_pos.x += dx;
 			m_pos.y += dy;
+		}
+
+		inline void box_base::move_to(int x, int y)
+		{
+			m_pos.x = x;
+			m_pos.y = y;
 		}
 
 	}

@@ -30,19 +30,7 @@ litehtml::box_model::box_base::ptr litehtml::box_model::box_base::create_box(con
 		case display_inline:
 			box = create_inline_box(el, doc);
 			break;
-		case display_inline_table:
-		case display_inline_block:
-		case display_block:
-		case display_list_item:
-		case display_table:
-		case display_table_caption:
-		case display_table_cell:
-		case display_table_column:
-		case display_table_column_group:
-		case display_table_footer_group:
-		case display_table_header_group:
-		case display_table_row:
-		case display_table_row_group:
+		default:
 			box = create_block_box(el, doc);
 			break;
 		}
@@ -61,8 +49,7 @@ litehtml::box_model::box_base::ptr litehtml::box_model::box_base::create_block_b
 	{
 		if (child->is_white_space())
 		{
-			if (boxes.empty() ||
-				!boxes.empty() && boxes.back()->get_type() == box_type_block)
+			if (boxes.empty() || boxes.back()->get_type() == box_type_block)
 			{
 				continue;
 			}
@@ -280,7 +267,7 @@ void litehtml::box_model::box_base::draw_stacking_context(uint_ptr hdc, int x, i
 */
 	draw_children(hdc, x, y, clip, draw_block, 0);
 //	draw_children(hdc, x, y, clip, draw_floats, 0);
-//	draw_children(hdc, x, y, clip, draw_inlines, 0);
+	draw_children(hdc, x, y, clip, draw_inlines, 0);
 /*
 	if (with_positioned)
 	{
@@ -330,12 +317,12 @@ bool litehtml::box_model::box_base::is_flow_root() const
 	return false;
 }
 
-void litehtml::box_model::box_base::place_floated_box(const box_base::ptr& floaded_box, int x, int y)
+void litehtml::box_model::box_base::place_floated_box(const box_base::ptr& box, int x, int y)
 {
 	box_base::ptr parent(m_parent);
 	if (parent)
 	{
-		parent->place_floated_box(floaded_box, x, y);
+		parent->place_floated_box(box, x, y);
 	}
 }
 
@@ -422,7 +409,7 @@ void litehtml::box_model::box_base::fetch_by_type(box_type bt, box_base::vector&
 	}
 }
 
-int litehtml::box_model::box_base::get_element_content_size(litehtml::size& sz, int max_width)
+void litehtml::box_model::box_base::get_element_content_size(litehtml::size& sz, int max_width) const
 {
 	if (m_element)
 	{
@@ -434,3 +421,84 @@ int litehtml::box_model::box_base::get_element_content_size(litehtml::size& sz, 
 	}
 }
 
+bool litehtml::box_model::box_base::is_white_space() const
+{
+	if (m_element)
+	{
+		return m_element->is_white_space();
+	}
+	return false;
+}
+
+bool litehtml::box_model::box_base::is_break() const
+{
+	if (m_element)
+	{
+		return m_element->is_break();
+	}
+	return false;
+}
+
+int litehtml::box_model::box_base::line_height() const
+{
+	if (m_element)
+	{
+		return m_element->line_height();
+	}
+	box_base::ptr el_parent = get_parent();
+	if (el_parent)
+	{
+		return el_parent->line_height();
+	}
+	return 0;
+}
+
+litehtml::uint_ptr litehtml::box_model::box_base::get_font(font_metrics* fm /*= 0*/) const
+{
+	if (m_element)
+	{
+		return m_element->get_font(fm);
+	}
+	box_base::ptr el_parent = get_parent();
+	if (el_parent)
+	{
+		return el_parent->get_font(fm);
+	}
+	return 0;
+}
+
+const litehtml::tchar_t* litehtml::box_model::box_base::get_style_property(const tchar_t* name, bool inherited, const tchar_t* def /*= 0*/) const
+{
+	if (m_element)
+	{
+		return m_element->get_style_property(name, inherited, def);
+	}
+	if (inherited)
+	{
+		box_base::ptr el_parent = get_parent();
+		if (el_parent)
+		{
+			return el_parent->get_style_property(name, inherited, def);
+		}
+	}
+	return def;
+}
+
+litehtml::vertical_align litehtml::box_model::box_base::get_vertical_align() const
+{
+	if (m_element)
+	{
+		return m_element->get_vertical_align();
+	}
+	box_base::ptr el_parent = get_parent();
+	if (el_parent)
+	{
+		return el_parent->get_vertical_align();
+	}
+	return va_baseline;
+}
+
+int litehtml::box_model::box_base::get_base_line() const
+{
+	return 0;
+}

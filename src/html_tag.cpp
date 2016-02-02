@@ -233,7 +233,7 @@ void litehtml::html_tag::apply_stylesheet( const litehtml::css& stylesheet )
 	}
 }
 
-void litehtml::html_tag::get_content_size( size& sz, int max_width )
+void litehtml::html_tag::get_content_size( size& sz, int max_width ) const
 {
 	sz.height	= 0;
 	if(m_display == display_block)
@@ -278,7 +278,7 @@ void litehtml::html_tag::draw( uint_ptr hdc, int x, int y, const position* clip 
 	}
 }
 
-litehtml::uint_ptr litehtml::html_tag::get_font(font_metrics* fm)
+litehtml::uint_ptr litehtml::html_tag::get_font(font_metrics* fm /*= 0*/) const
 {
 	if(fm)
 	{
@@ -375,16 +375,16 @@ void litehtml::html_tag::parse_styles(bool is_reparse)
 
 	m_css_text_indent.fromString(	get_style_property(_t("text-indent"),	true,	_t("0")),	_t("0"));
 
-	m_css_width = get_raw_css_width(doc);
-	m_css_height = get_raw_css_height(doc);
-	m_css_min_width = get_raw_css_min_width(doc);
-	m_css_min_height = get_raw_css_min_height(doc);
-	m_css_max_width = get_raw_css_max_width(doc);
-	m_css_max_height = get_raw_css_max_height(doc);
-	m_css_offsets = get_raw_css_offset(doc);
-	m_css_margins = get_raw_css_margin(doc);
-	m_css_padding = get_raw_css_padding(doc);
-	m_css_borders = get_raw_css_border(doc);
+	m_css_width = calculate_raw_css_width(doc);
+	m_css_height = calculate_raw_css_height(doc);
+	m_css_min_width = calculate_raw_css_min_width(doc);
+	m_css_min_height = calculate_raw_css_min_height(doc);
+	m_css_max_width = calculate_raw_css_max_width(doc);
+	m_css_max_height = calculate_raw_css_max_height(doc);
+	m_css_offsets = calculate_raw_css_offset(doc);
+	m_css_margins = calculate_raw_css_margin(doc);
+	m_css_padding = calculate_raw_css_padding(doc);
+	m_css_borders = calculate_raw_css_border(doc);
 
 	doc->cvt_units(m_css_text_indent, m_font_size);
 

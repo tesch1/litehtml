@@ -27,8 +27,8 @@ namespace litehtml
 
 			std::vector<floated_box>	m_floats_left;
 			std::vector<floated_box>	m_floats_right;
-			int_int_cache				m_cahe_line_left;
-			int_int_cache				m_cahe_line_right;
+			int_int_cache				m_cache_line_left;
+			int_int_cache				m_cache_line_right;
 		public:
 			box_block(const std::shared_ptr<element>& generated_by, const std::shared_ptr<document>& doc) :
 				box_base(generated_by, doc),
@@ -48,7 +48,7 @@ namespace litehtml
 			virtual overflow get_overflow() const override;
 			virtual element_float get_float() const;
 			virtual element_clear get_clear() const;
-			virtual void place_floated_box(const box_base::ptr& floaded_box, int x, int y) override;
+			virtual void place_floated_box(const box_base::ptr& box, int x, int y) override;
 			virtual int render(int x, int y, int max_width, bool second_pass) override;
 			virtual int get_floats_height(element_float el_float = float_none) const override;
 

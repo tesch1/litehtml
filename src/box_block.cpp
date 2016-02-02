@@ -22,21 +22,21 @@ void litehtml::box_model::box_block::init_from_element()
 	{
 		document::ptr doc(m_document);
 
-		m_css_width = m_element->get_raw_css_width(doc);
-		m_css_height = m_element->get_raw_css_height(doc);
-		m_css_min_width = m_element->get_raw_css_min_width(doc);
-		m_css_min_height = m_element->get_raw_css_min_height(doc);
-		m_css_max_width = m_element->get_raw_css_max_width(doc);
-		m_css_max_height = m_element->get_raw_css_max_height(doc);
-		m_css_offsets = m_element->get_raw_css_offset(doc);
-		m_css_margins = m_element->get_raw_css_margin(doc);
-		m_css_padding = m_element->get_raw_css_padding(doc);
-		m_css_borders = m_element->get_raw_css_border(doc);
-		m_box_sizing = (box_sizing)value_index(m_element->get_style_property(_t("box-sizing"), false, _t("content-box")), box_sizing_strings, box_sizing_content_box);
-		m_float = (element_float)value_index(m_element->get_style_property(_t("float"), false, _t("none")), element_float_strings, float_none);
-		m_clear = (element_clear)value_index(m_element->get_style_property(_t("clear"), false, _t("none")), element_clear_strings, clear_none);
-		m_overflow = (overflow)value_index(m_element->get_style_property(_t("overflow"), false, _t("visible")), overflow_strings, overflow_visible);
+		m_css_width = m_element->calculate_raw_css_width(doc);
+		m_css_height = m_element->calculate_raw_css_height(doc);
+		m_css_min_width = m_element->calculate_raw_css_min_width(doc);
+		m_css_min_height = m_element->calculate_raw_css_min_height(doc);
+		m_css_max_width = m_element->calculate_raw_css_max_width(doc);
+		m_css_max_height = m_element->calculate_raw_css_max_height(doc);
+		m_css_offsets = m_element->calculate_raw_css_offset(doc);
+		m_css_margins = m_element->calculate_raw_css_margin(doc);
+		m_css_padding = m_element->calculate_raw_css_padding(doc);
+		m_css_borders = m_element->calculate_raw_css_border(doc);
 	}
+	m_box_sizing = (box_sizing)value_index(get_style_property(_t("box-sizing"), false, _t("content-box")), box_sizing_strings, box_sizing_content_box);
+	m_float = (element_float)value_index(get_style_property(_t("float"), false, _t("none")), element_float_strings, float_none);
+	m_clear = (element_clear)value_index(get_style_property(_t("clear"), false, _t("none")), element_clear_strings, clear_none);
+	m_overflow = (overflow)value_index(get_style_property(_t("overflow"), false, _t("visible")), overflow_strings, overflow_visible);
 }
 
 litehtml::css_length litehtml::box_model::box_block::get_css_width() const
@@ -88,11 +88,9 @@ int litehtml::box_model::box_block::get_floats_height(element_float el_float /*=
 	{
 		int h = 0;
 
-		bool process = false;
-
-		for (const auto& fb : m_floats_left)
+		auto floats_processor = [&h, el_float](const floated_box& fb)
 		{
-			process = false;
+			bool process = false;
 			switch (el_float)
 			{
 			case float_none:
@@ -122,42 +120,9 @@ int litehtml::box_model::box_block::get_floats_height(element_float el_float /*=
 					h = std::max(h, fb.pos.top());
 				}
 			}
-		}
-
-
-		for (const auto fb : m_floats_right)
-		{
-			process = false;
-			switch (el_float)
-			{
-			case float_none:
-				process = true;
-				break;
-			case float_left:
-				if (fb.clear_floats == clear_left || fb.clear_floats == clear_both)
-				{
-					process = true;
-				}
-				break;
-			case float_right:
-				if (fb.clear_floats == clear_right || fb.clear_floats == clear_both)
-				{
-					process = true;
-				}
-				break;
-			}
-			if (process)
-			{
-				if (el_float == float_none)
-				{
-					h = std::max(h, fb.pos.bottom());
-				}
-				else
-				{
-					h = std::max(h, fb.pos.top());
-				}
-			}
-		}
+		};
+		std::for_each(m_floats_left.begin(), m_floats_left.end(), floats_processor);
+		std::for_each(m_floats_right.begin(), m_floats_right.end(), floats_processor);
 
 		return h;
 	}
@@ -208,18 +173,18 @@ litehtml::element_clear litehtml::box_model::box_block::get_clear() const
 	return m_clear;
 }
 
-void litehtml::box_model::box_block::place_floated_box(const box_base::ptr& floaded_box, int x, int y)
+void litehtml::box_model::box_block::place_floated_box(const box_base::ptr& box, int x, int y)
 {
 	if (is_flow_root())
 	{
 		floated_box fb;
-		fb.pos.x = floaded_box->left() + x;
-		fb.pos.y = floaded_box->top() + y;
-		fb.pos.width = floaded_box->width();
-		fb.pos.height = floaded_box->height();
-		fb.float_side = floaded_box->get_float();
-		fb.clear_floats = floaded_box->get_clear();
-		fb.box = floaded_box;
+		fb.pos.x = box->left() + x;
+		fb.pos.y = box->top() + y;
+		fb.pos.width = box->width();
+		fb.pos.height = box->height();
+		fb.float_side = box->get_float();
+		fb.clear_floats = box->get_clear();
+		fb.box = box;
 
 		if (fb.float_side == float_left)
 		{
@@ -244,7 +209,7 @@ void litehtml::box_model::box_block::place_floated_box(const box_base::ptr& floa
 					m_floats_left.push_back(std::move(fb));
 				}
 			}
-			m_cahe_line_left.invalidate();
+			m_cache_line_left.invalidate();
 		}
 		else if (fb.float_side == float_right)
 		{
@@ -255,7 +220,7 @@ void litehtml::box_model::box_block::place_floated_box(const box_base::ptr& floa
 			else
 			{
 				bool inserted = false;
-				for (floated_box::vector::iterator i = m_floats_right.begin(); i != m_floats_right.end(); i++)
+				for (floated_box::vector::iterator i = m_floats_right.begin(); i != m_floats_right.end(); ++i)
 				{
 					if (fb.pos.left() < i->pos.left())
 					{
@@ -269,7 +234,7 @@ void litehtml::box_model::box_block::place_floated_box(const box_base::ptr& floa
 					m_floats_right.push_back(fb);
 				}
 			}
-			m_cahe_line_right.invalidate();
+			m_cache_line_right.invalidate();
 		}
 	}
 	else
@@ -277,7 +242,7 @@ void litehtml::box_model::box_block::place_floated_box(const box_base::ptr& floa
 		box_base::ptr el_parent(m_parent);
 		if (el_parent)
 		{
-			el_parent->place_floated_box(floaded_box, x + m_pos.x, y + m_pos.y);
+			el_parent->place_floated_box(box, x + m_pos.x, y + m_pos.y);
 		}
 	}
 }
@@ -361,8 +326,8 @@ int litehtml::box_model::box_block::render(int x, int y, int max_width, bool sec
 
 	m_floats_left.clear();
 	m_floats_right.clear();
-	m_cahe_line_left.invalidate();
-	m_cahe_line_right.invalidate();
+	m_cache_line_left.invalidate();
+	m_cache_line_right.invalidate();
 
 	ret_width = render_children(x, y, max_width, ret_width, second_pass);
 

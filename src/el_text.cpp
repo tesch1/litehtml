@@ -18,7 +18,7 @@ litehtml::el_text::~el_text()
 
 }
 
-void litehtml::el_text::get_content_size( size& sz, int max_width )
+void litehtml::el_text::get_content_size( size& sz, int max_width ) const
 {
 	sz = m_size;
 }
@@ -133,7 +133,7 @@ int litehtml::el_text::line_height() const
 	return 0;
 }
 
-litehtml::uint_ptr litehtml::el_text::get_font( font_metrics* fm /*= 0*/ )
+litehtml::uint_ptr litehtml::el_text::get_font( font_metrics* fm /*= 0*/ ) const
 {
 	element::ptr el_parent = parent();
 	if (el_parent)

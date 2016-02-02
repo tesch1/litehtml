@@ -23,13 +23,13 @@ namespace litehtml
 		virtual int					get_base_line() override;
 		virtual void				draw(uint_ptr hdc, int x, int y, const position* clip) override;
 		virtual int					line_height() const override;
-		virtual uint_ptr			get_font(font_metrics* fm = 0) override;
+		virtual uint_ptr			get_font(font_metrics* fm = 0) const override;
 		virtual style_display		get_display() const override;
 		virtual white_space			get_white_space() const override;
 		virtual element_position	get_element_position(css_offsets* offsets = 0) const override;
 		virtual css_offsets			get_css_offsets() const override;
 
 	protected:
-		virtual void				get_content_size(size& sz, int max_width) override;
+		virtual void				get_content_size(size& sz, int max_width) const override;
 	};
 }

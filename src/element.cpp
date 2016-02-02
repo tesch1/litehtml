@@ -310,7 +310,7 @@ void litehtml::element::apply_relative_shift(int parent_width)
 	}
 }
 
-litehtml::css_length litehtml::element::get_raw_css_width(const std::shared_ptr<document>& doc) const
+litehtml::css_length litehtml::element::calculate_raw_css_width(const std::shared_ptr<document>& doc) const
 {
 	css_length val;
 	val.fromString(get_style_property(_t("width"), false, _t("auto")), _t("auto"));
@@ -321,7 +321,7 @@ litehtml::css_length litehtml::element::get_raw_css_width(const std::shared_ptr<
 	return val;
 }
 
-litehtml::css_length litehtml::element::get_raw_css_height(const std::shared_ptr<document>& doc) const
+litehtml::css_length litehtml::element::calculate_raw_css_height(const std::shared_ptr<document>& doc) const
 {
 	css_length val;
 	val.fromString(get_style_property(_t("height"), false, _t("auto")), _t("auto"));
@@ -332,7 +332,7 @@ litehtml::css_length litehtml::element::get_raw_css_height(const std::shared_ptr
 	return val;
 }
 
-litehtml::css_length litehtml::element::get_raw_css_min_width(const std::shared_ptr<document>& doc) const
+litehtml::css_length litehtml::element::calculate_raw_css_min_width(const std::shared_ptr<document>& doc) const
 {
 	css_length val;
 	val.fromString(get_style_property(_t("min-width"), false, _t("0")));
@@ -343,7 +343,7 @@ litehtml::css_length litehtml::element::get_raw_css_min_width(const std::shared_
 	return val;
 }
 
-litehtml::css_length litehtml::element::get_raw_css_min_height(const std::shared_ptr<document>& doc) const
+litehtml::css_length litehtml::element::calculate_raw_css_min_height(const std::shared_ptr<document>& doc) const
 {
 	css_length val;
 	val.fromString(get_style_property(_t("min-height"), false, _t("0")));
@@ -354,7 +354,7 @@ litehtml::css_length litehtml::element::get_raw_css_min_height(const std::shared
 	return val;
 }
 
-litehtml::css_length litehtml::element::get_raw_css_max_height(const std::shared_ptr<document>& doc) const
+litehtml::css_length litehtml::element::calculate_raw_css_max_height(const std::shared_ptr<document>& doc) const
 {
 	css_length val;
 	val.fromString(get_style_property(_t("max-height"), false, _t("none")), _t("none"));
@@ -365,7 +365,7 @@ litehtml::css_length litehtml::element::get_raw_css_max_height(const std::shared
 	return val;
 }
 
-litehtml::css_length litehtml::element::get_raw_css_max_width(const std::shared_ptr<document>& doc) const
+litehtml::css_length litehtml::element::calculate_raw_css_max_width(const std::shared_ptr<document>& doc) const
 {
 	css_length val;
 	val.fromString(get_style_property(_t("max-width"), false, _t("none")), _t("none"));
@@ -376,7 +376,7 @@ litehtml::css_length litehtml::element::get_raw_css_max_width(const std::shared_
 	return val;
 }
 
-litehtml::css_offsets litehtml::element::get_raw_css_offset(const std::shared_ptr<document>& doc) const
+litehtml::css_offsets litehtml::element::calculate_raw_css_offset(const std::shared_ptr<document>& doc) const
 {
 	css_offsets val;
 	val.left.fromString(get_style_property(_t("left"), false, _t("auto")), _t("auto"));
@@ -394,7 +394,7 @@ litehtml::css_offsets litehtml::element::get_raw_css_offset(const std::shared_pt
 	return val;
 }
 
-litehtml::css_margins litehtml::element::get_raw_css_margin(const std::shared_ptr<document>& doc) const
+litehtml::css_margins litehtml::element::calculate_raw_css_margin(const std::shared_ptr<document>& doc) const
 {
 	css_margins val;
 	val.left.fromString(get_style_property(_t("margin-left"), false, _t("0")), _t("auto"));
@@ -412,7 +412,7 @@ litehtml::css_margins litehtml::element::get_raw_css_margin(const std::shared_pt
 	return val;
 }
 
-litehtml::css_margins litehtml::element::get_raw_css_padding(const std::shared_ptr<document>& doc) const
+litehtml::css_margins litehtml::element::calculate_raw_css_padding(const std::shared_ptr<document>& doc) const
 {
 	css_margins val;
 	val.left.fromString(get_style_property(_t("padding-left"), false, _t("0")), _t(""));
@@ -430,7 +430,7 @@ litehtml::css_margins litehtml::element::get_raw_css_padding(const std::shared_p
 	return val;
 }
 
-litehtml::css_borders litehtml::element::get_raw_css_border(const std::shared_ptr<document>& doc) const
+litehtml::css_borders litehtml::element::calculate_raw_css_border(const std::shared_ptr<document>& doc) const
 {
 	css_borders val;
 	val.left.width.fromString(get_style_property(_t("border-left-width"), false, _t("medium")), border_width_strings);
@@ -533,7 +533,7 @@ int litehtml::element::get_left_floats_height() const								LITEHTML_RETURN_FUN
 int litehtml::element::get_right_floats_height() const								LITEHTML_RETURN_FUNC(0)
 int litehtml::element::get_floats_height(element_float el_float) const				LITEHTML_RETURN_FUNC(0)
 bool litehtml::element::is_floats_holder() const									LITEHTML_RETURN_FUNC(false)
-void litehtml::element::get_content_size( size& sz, int max_width )					LITEHTML_EMPTY_FUNC
+void litehtml::element::get_content_size( size& sz, int max_width ) const			LITEHTML_EMPTY_FUNC
 void litehtml::element::init()														LITEHTML_EMPTY_FUNC
 int litehtml::element::render( int x, int y, int max_width, bool second_pass )		LITEHTML_RETURN_FUNC(0)
 bool litehtml::element::appendChild(const ptr &el)						LITEHTML_RETURN_FUNC(false)
@@ -570,7 +570,7 @@ int litehtml::element::line_height() const											LITEHTML_RETURN_FUNC(0)
 void litehtml::element::draw( uint_ptr hdc, int x, int y, const position* clip )	LITEHTML_EMPTY_FUNC
 void litehtml::element::draw_background( uint_ptr hdc, int x, int y, const position* clip )	LITEHTML_EMPTY_FUNC
 const litehtml::tchar_t* litehtml::element::get_style_property( const tchar_t* name, bool inherited, const tchar_t* def /*= 0*/ ) const	LITEHTML_RETURN_FUNC(0)
-litehtml::uint_ptr litehtml::element::get_font( font_metrics* fm /*= 0*/ )			LITEHTML_RETURN_FUNC(0)
+litehtml::uint_ptr litehtml::element::get_font( font_metrics* fm /*= 0*/ ) const	LITEHTML_RETURN_FUNC(0)
 int litehtml::element::get_font_size()	const										LITEHTML_RETURN_FUNC(0)
 void litehtml::element::get_text( tstring& text )									LITEHTML_EMPTY_FUNC
 void litehtml::element::parse_attributes()											LITEHTML_EMPTY_FUNC

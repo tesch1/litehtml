@@ -165,7 +165,7 @@ namespace litehtml
 		virtual void				draw_background(uint_ptr hdc, int x, int y, const position* clip) override;
 
 		virtual const tchar_t*		get_style_property(const tchar_t* name, bool inherited, const tchar_t* def = 0) const override;
-		virtual uint_ptr			get_font(font_metrics* fm = 0) override;
+		virtual uint_ptr			get_font(font_metrics* fm = 0) const override;
 		virtual int					get_font_size() const override;
 
 		elements_vector&			children();
@@ -190,7 +190,7 @@ namespace litehtml
 		virtual bool				is_first_child_inline(const element::ptr& el) const override;
 		virtual bool				is_last_child_inline(const element::ptr& el) override;
 		virtual bool				have_inline_child() const override;
-		virtual void				get_content_size(size& sz, int max_width) override;
+		virtual void				get_content_size(size& sz, int max_width) const override;
 		virtual void				init() override;
 		virtual void				get_inline_boxes(position::vector& boxes) override;
 		virtual bool				is_floats_holder() const override;

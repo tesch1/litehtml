@@ -12,7 +12,7 @@ litehtml::el_image::~el_image( void )
 
 }
 
-void litehtml::el_image::get_content_size( size& sz, int max_width )
+void litehtml::el_image::get_content_size( size& sz, int max_width ) const
 {
 	get_document()->container()->get_image_size(m_src.c_str(), 0, sz);
 }

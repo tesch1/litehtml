@@ -91,16 +91,16 @@ namespace litehtml
 		void						apply_relative_shift(int parent_width);
 		void						set_pos(position& pos);
 
-		css_length					get_raw_css_width(const std::shared_ptr<document>& doc) const;
-		css_length					get_raw_css_height(const std::shared_ptr<document>& doc) const;
-		css_length					get_raw_css_min_width(const std::shared_ptr<document>& doc) const;
-		css_length					get_raw_css_min_height(const std::shared_ptr<document>& doc) const;
-		css_length					get_raw_css_max_width(const std::shared_ptr<document>& doc) const;
-		css_length					get_raw_css_max_height(const std::shared_ptr<document>& doc) const;
-		css_offsets					get_raw_css_offset(const std::shared_ptr<document>& doc) const;
-		css_margins					get_raw_css_margin(const std::shared_ptr<document>& doc) const;
-		css_margins					get_raw_css_padding(const std::shared_ptr<document>& doc) const;
-		css_borders					get_raw_css_border(const std::shared_ptr<document>& doc) const;
+		css_length					calculate_raw_css_width(const std::shared_ptr<document>& doc) const;
+		css_length					calculate_raw_css_height(const std::shared_ptr<document>& doc) const;
+		css_length					calculate_raw_css_min_width(const std::shared_ptr<document>& doc) const;
+		css_length					calculate_raw_css_min_height(const std::shared_ptr<document>& doc) const;
+		css_length					calculate_raw_css_max_width(const std::shared_ptr<document>& doc) const;
+		css_length					calculate_raw_css_max_height(const std::shared_ptr<document>& doc) const;
+		css_offsets					calculate_raw_css_offset(const std::shared_ptr<document>& doc) const;
+		css_margins					calculate_raw_css_margin(const std::shared_ptr<document>& doc) const;
+		css_margins					calculate_raw_css_padding(const std::shared_ptr<document>& doc) const;
+		css_borders					calculate_raw_css_border(const std::shared_ptr<document>& doc) const;
 
 		std::shared_ptr<document>	get_document() const;
 
@@ -172,7 +172,7 @@ namespace litehtml
 		virtual void				draw(uint_ptr hdc, int x, int y, const position* clip);
 		virtual void				draw_background( uint_ptr hdc, int x, int y, const position* clip );
 		virtual const tchar_t*		get_style_property(const tchar_t* name, bool inherited, const tchar_t* def = 0) const;
-		virtual uint_ptr			get_font(font_metrics* fm = 0);
+		virtual uint_ptr			get_font(font_metrics* fm = 0) const;
 		virtual int					get_font_size() const;
 		virtual void				get_text(tstring& text);
 		virtual void				parse_attributes();
@@ -185,7 +185,7 @@ namespace litehtml
 		virtual bool				is_first_child_inline(const element::ptr& el) const;
 		virtual bool				is_last_child_inline(const element::ptr& el);
 		virtual bool				have_inline_child() const;
-		virtual void				get_content_size(size& sz, int max_width);
+		virtual void				get_content_size(size& sz, int max_width) const;
 		virtual void				init();
 		virtual bool				is_floats_holder() const;
 		virtual int					get_floats_height(element_float el_float = float_none) const;

@@ -98,7 +98,7 @@ namespace litehtml
 			virtual overflow get_overflow() const;
 			virtual void place_floated_box(const box_base::ptr& box, int x, int y);
 			virtual int get_floats_height(element_float el_float = float_none) const;
-			virtual int get_base_line() const;
+			virtual int calculate_base_line() const;
 
 		protected:
 			static box_base::ptr create_block_box(const std::shared_ptr<element>& el, const std::shared_ptr<document>& doc);

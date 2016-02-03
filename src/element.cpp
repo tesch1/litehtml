@@ -569,7 +569,7 @@ bool litehtml::element::is_replaced() const											LITEHTML_RETURN_FUNC(false
 int litehtml::element::line_height() const											LITEHTML_RETURN_FUNC(0)
 void litehtml::element::draw( uint_ptr hdc, int x, int y, const position* clip )	LITEHTML_EMPTY_FUNC
 void litehtml::element::draw_background( uint_ptr hdc, int x, int y, const position* clip )	LITEHTML_EMPTY_FUNC
-const litehtml::tchar_t* litehtml::element::get_style_property( const tchar_t* name, bool inherited, const tchar_t* def /*= 0*/ ) const	LITEHTML_RETURN_FUNC(0)
+const litehtml::tchar_t* litehtml::element::get_style_property( const tchar_t* name, bool inherited, const tchar_t* def /*= 0*/ ) const	LITEHTML_RETURN_FUNC(def)
 litehtml::uint_ptr litehtml::element::get_font( font_metrics* fm /*= 0*/ ) const	LITEHTML_RETURN_FUNC(0)
 int litehtml::element::get_font_size()	const										LITEHTML_RETURN_FUNC(0)
 void litehtml::element::get_text( tstring& text )									LITEHTML_EMPTY_FUNC

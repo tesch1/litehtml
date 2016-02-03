@@ -217,3 +217,11 @@ void litehtml::box_model::box_block_with_blocks::draw_children(uint_ptr hdc, int
 	}
 }
 
+int litehtml::box_model::box_block_with_blocks::calculate_base_line() const
+{
+	if (!m_children.empty())
+	{
+		return (m_pos.height + content_margins_bottom()) - (m_children.back()->bottom() - m_children.back()->calculate_base_line());
+	}
+	return content_margins_bottom();
+}

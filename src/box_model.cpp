@@ -230,7 +230,7 @@ void litehtml::box_model::box_base::update_element()
 {
 	if (m_element)
 	{
-		m_element->set_pos(m_pos);
+		m_element->update_placement(m_pos, m_margins, m_padding, m_borders);
 	}
 }
 
@@ -498,7 +498,7 @@ litehtml::vertical_align litehtml::box_model::box_base::get_vertical_align() con
 	return va_baseline;
 }
 
-int litehtml::box_model::box_base::get_base_line() const
+int litehtml::box_model::box_base::calculate_base_line() const
 {
 	return 0;
 }

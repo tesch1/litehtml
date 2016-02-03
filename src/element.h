@@ -89,7 +89,8 @@ namespace litehtml
 		int							get_inline_shift_left();
 		int							get_inline_shift_right();
 		void						apply_relative_shift(int parent_width);
-		void						set_pos(position& pos);
+
+		void						update_placement(const position& pos, const margins& margin, const margins& padding, const margins& border);
 
 		css_length					calculate_raw_css_width(const std::shared_ptr<document>& doc) const;
 		css_length					calculate_raw_css_height(const std::shared_ptr<document>& doc) const;
@@ -417,8 +418,11 @@ namespace litehtml
 		return m_children;
 	}
 
-	inline void element::set_pos(position& pos)
+	inline void element::update_placement(const position& pos, const margins& margin, const margins& padding, const margins& border)
 	{
 		m_pos = pos;
+		m_padding = padding;
+		m_margins = margin;
+		m_borders = border;
 	}
 }

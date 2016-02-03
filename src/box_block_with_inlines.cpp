@@ -80,7 +80,7 @@ int litehtml::box_model::box_block_with_inlines::render_children(int x, int y, i
 			}
 			if (add)
 			{
-				box->move_to(ln->pos.width, 0);
+				box->move_to(ln->pos.width + box->content_margins_left(), 0);
 				box->update_element();
 
 				ln->elements.push_back(box);
@@ -183,7 +183,7 @@ void litehtml::box_model::box_block_with_inlines::finish_line(box_line* ln, int 
 			case va_sub:
 			case va_baseline:
 				el->move_to(el->content_left(),
-					ln->pos.height - base_line - el->height() + el->get_base_line() + el->content_margins_top());
+					ln->pos.height - base_line - el->height() + el->calculate_base_line() + el->content_margins_top());
 				break;
 			case va_top:
 				el->move_to(el->content_left(),
@@ -300,4 +300,13 @@ void litehtml::box_model::box_block_with_inlines::init_from_element()
 {
 	box_block::init_from_element();
 	m_text_align = (text_align)value_index(get_style_property(_t("text-align"), true, _t("left")), text_align_strings, text_align_left);
+}
+
+int litehtml::box_model::box_block_with_inlines::calculate_base_line() const
+{
+	if (!m_lines.empty())
+	{
+		return m_pos.height + content_margins_bottom() - (m_lines.back().pos.bottom() - m_lines.back().base_line);
+	}
+	return 0;
 }

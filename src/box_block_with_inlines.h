@@ -52,6 +52,7 @@ namespace litehtml
 			virtual void add_box(const box_base::ptr& box) override;
 			virtual void draw_children(uint_ptr hdc, int x, int y, const position* clip, draw_flag flag, int zindex) override;
 			virtual void init_from_element() override;
+			virtual int  calculate_base_line() const override;
 
 		protected:
 			virtual int render_children(int x, int y, int max_width, int ret_width, bool second_pass) override;

@@ -14,7 +14,6 @@ void litehtml::box_model::box_table::add_box(const box_base::ptr& box)
 {
 	if (box->get_type() == box_type_block)
 	{
-		m_children.push_back(box);
-		box->set_parent(shared_from_this());
+		push_child_box(box);
 	}
 }

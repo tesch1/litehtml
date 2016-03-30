@@ -35,10 +35,7 @@ namespace litehtml
 				m_box_sizing(box_sizing_content_box),
 				m_float(float_none),
 				m_clear(clear_none),
-				m_overflow(overflow_visible)
-			{
-				init_from_element();
-			}
+				m_overflow(overflow_visible){}
 
 			virtual box_type get_type() const override;
 			virtual void init_from_element() override;

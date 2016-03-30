@@ -13,6 +13,7 @@ namespace litehtml
 			int					box_left;
 			int					box_right;
 			int					base_line;
+			int					line_height;
 			litehtml::position	pos;
 			box_base::vector	elements;
 
@@ -20,24 +21,31 @@ namespace litehtml
 				pos(),
 				box_left(0),
 				box_right(0),
-				base_line(0){}
-			box_line(int left, int right, int top) :
-				pos(left, top, 0, 0),
+				base_line(0),
+				line_height(0){}
+			box_line(int left, int right, int top, int baseline, int lineheight) :
+				pos(left, top, 0, lineheight),
 				box_left(left),
 				box_right(right),
-				base_line(0){}
+				base_line(baseline),
+				line_height(lineheight){}
 			box_line(const box_line& val) :
 				pos(val.pos),
 				box_left(val.box_left),
 				box_right(val.box_right),
 				base_line(val.base_line),
-				elements(val.elements) {}
+				elements(val.elements),
+				line_height(val.line_height) {}
 			box_line(box_line&& val) :
 				pos(std::move(val.pos)),
 				box_left(std::move(val.box_left)),
 				box_right(std::move(val.box_right)),
 				base_line(std::move(val.base_line)),
-				elements(std::move(val.elements)){}
+				elements(std::move(val.elements)),
+				line_height(std::move(val.line_height)) {}
+
+			void add_box(const box_base::ptr& box);
+			void finish(int lineheight, font_metrics& font, text_align align);
 		};
 
 		class box_block_with_inlines : public box_block
@@ -58,7 +66,6 @@ namespace litehtml
 			virtual int render_children(int x, int y, int max_width, int ret_width, bool second_pass) override;
 
 			box_line* add_line(int max_width, int line_height, font_metrics& font);
-			void finish_line(box_line* ln, int line_height, font_metrics& font);
 		};
 	}
 }

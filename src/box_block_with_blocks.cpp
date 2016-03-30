@@ -7,8 +7,7 @@ void litehtml::box_model::box_block_with_blocks::add_box(const box_base::ptr& bo
 {
 	if (box->get_type() == box_type_block)
 	{
-		m_children.push_back(box);
-		box->set_parent(shared_from_this());
+		push_child_box(box);
 	}
 	else
 	{
@@ -24,9 +23,8 @@ void litehtml::box_model::box_block_with_blocks::add_box(const box_base::ptr& bo
 		if (add_anonymous_box)
 		{
 			box_base::ptr anon_box = std::make_shared<box_block_with_inlines>(nullptr, std::shared_ptr<document>(m_document));
+			push_child_box(anon_box);
 			anon_box->add_box(box);
-			m_children.push_back(anon_box);
-			anon_box->set_parent(shared_from_this());
 		}
 	}
 }

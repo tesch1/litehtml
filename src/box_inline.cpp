@@ -13,7 +13,7 @@ litehtml::box_model::box_type litehtml::box_model::box_inline::get_type() const
 
 void litehtml::box_model::box_inline::add_box(const box_base::ptr& box)
 {
-	m_children.push_back(box);
+	push_child_box(box);
 }
 
 void litehtml::box_model::box_inline::init_from_element()

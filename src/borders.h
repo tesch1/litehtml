@@ -29,6 +29,12 @@ namespace litehtml
 			color	= val.color;
 			return *this;
 		}
+
+		void set_default()
+		{
+			width.predef(border_width_medium);
+			style = border_style_none;
+		}
 	};
 
 	struct border
@@ -209,6 +215,18 @@ namespace litehtml
 			ret.bottom_right_y = bottom_right_y.calc_percent(height);
 			return ret;
 		}
+
+		void set_default()
+		{
+			top_left_x = 0;
+			top_left_y = 0;
+			top_right_x = 0;
+			top_right_y = 0;
+			bottom_left_x = 0;
+			bottom_left_y = 0;
+			bottom_right_x = 0;
+			bottom_right_y = 0;
+		}
 	};
 
 	struct css_borders
@@ -241,6 +259,14 @@ namespace litehtml
 			bottom	= val.bottom;
 			radius	= val.radius;
 			return *this;
+		}
+
+		void set_default()
+		{
+			left.set_default();
+			right.set_default();
+			top.set_default();
+			bottom.set_default();
 		}
 	};
 

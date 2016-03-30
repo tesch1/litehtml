@@ -35,6 +35,10 @@ litehtml::box_model::box_base::ptr litehtml::box_model::box_base::create_box(con
 			break;
 		}
 	}
+	if (box && el && !el->have_parent())
+	{
+		box->init_from_element();
+	}
 	return std::move(box);
 }
 
@@ -129,7 +133,7 @@ int litehtml::box_model::box_base::calc_width(int defWidth) const
 		}
 		else
 		{
-			box_base::ptr parent(m_parent);
+			box_base::ptr parent = get_parent();
 			if (parent)
 			{
 				int pw = parent->calc_width(defWidth);
@@ -149,7 +153,7 @@ int litehtml::box_model::box_base::calc_width(int defWidth) const
 int litehtml::box_model::box_base::get_font_size() const
 {
 	if (m_element) return m_element->get_font_size();
-	box_base::ptr parent(m_parent);
+	box_base::ptr parent = get_parent();
 	if (parent)
 	{
 		return parent->get_font_size();
@@ -180,7 +184,7 @@ bool litehtml::box_model::box_base::get_predefined_height(int& p_height) const
 		}
 		else
 		{
-			box_base::ptr parent(m_parent);
+			box_base::ptr parent = get_parent();
 			if (parent)
 			{
 				int ph = 0;
@@ -319,7 +323,7 @@ bool litehtml::box_model::box_base::is_flow_root() const
 
 void litehtml::box_model::box_base::place_floated_box(const box_base::ptr& box, int x, int y)
 {
-	box_base::ptr parent(m_parent);
+	box_base::ptr parent = get_parent();
 	if (parent)
 	{
 		parent->place_floated_box(box, x, y);
@@ -341,7 +345,7 @@ void litehtml::box_model::box_base::apply_relative_shift(int parent_width)
 	css_offsets offsets;
 	if (get_element_position(&offsets) == element_position_relative)
 	{
-		box_base::ptr parent_ptr(m_parent);
+		box_base::ptr parent_ptr = get_parent();
 		if (!offsets.left.is_predefined())
 		{
 			m_pos.x += offsets.left.calc_percent(parent_width);
@@ -356,7 +360,7 @@ void litehtml::box_model::box_base::apply_relative_shift(int parent_width)
 
 			if (offsets.top.units() == css_units_percentage)
 			{
-				box_base::ptr el_parent(m_parent);
+				box_base::ptr el_parent = get_parent();
 				if (el_parent)
 				{
 					el_parent->get_predefined_height(h);
@@ -371,7 +375,7 @@ void litehtml::box_model::box_base::apply_relative_shift(int parent_width)
 
 			if (offsets.top.units() == css_units_percentage)
 			{
-				box_base::ptr el_parent(m_parent);
+				box_base::ptr el_parent = get_parent();
 				if (el_parent)
 				{
 					el_parent->get_predefined_height(h);

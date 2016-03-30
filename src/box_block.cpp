@@ -33,6 +33,32 @@ void litehtml::box_model::box_block::init_from_element()
 		m_css_padding = m_element->calculate_raw_css_padding(doc);
 		m_css_borders = m_element->calculate_raw_css_border(doc);
 	}
+	else
+	{
+		m_css_width.predef(0);
+		m_css_height.predef(0);
+		m_css_min_width.set_value(0, css_units_px);
+		m_css_min_height.set_value(0, css_units_px);
+		m_css_max_width.predef(0);
+		m_css_max_height.predef(0);
+
+		m_css_offsets.left.predef(0);
+		m_css_offsets.right.predef(0);
+		m_css_offsets.top.predef(0);
+		m_css_offsets.bottom.predef(0);
+
+		m_css_margins.left = 0;
+		m_css_margins.right = 0;
+		m_css_margins.top = 0;
+		m_css_margins.bottom = 0;
+
+		m_css_padding.left = 0;
+		m_css_padding.right = 0;
+		m_css_padding.top = 0;
+		m_css_padding.bottom = 0;
+
+		m_css_borders.set_default();
+	}
 	m_box_sizing = (box_sizing)value_index(get_style_property(_t("box-sizing"), false, _t("content-box")), box_sizing_strings, box_sizing_content_box);
 	m_float = (element_float)value_index(get_style_property(_t("float"), false, _t("none")), element_float_strings, float_none);
 	m_clear = (element_clear)value_index(get_style_property(_t("clear"), false, _t("none")), element_clear_strings, clear_none);
@@ -239,7 +265,7 @@ void litehtml::box_model::box_block::place_floated_box(const box_base::ptr& box,
 	}
 	else
 	{
-		box_base::ptr el_parent(m_parent);
+		box_base::ptr el_parent = get_parent();
 		if (el_parent)
 		{
 			el_parent->place_floated_box(box, x + m_pos.x, y + m_pos.y);
@@ -264,6 +290,9 @@ int litehtml::box_model::box_block::render(int x, int y, int max_width, bool sec
 
 	m_margins.top = m_css_margins.top.calc_percent(parent_width);
 	m_margins.bottom = m_css_margins.bottom.calc_percent(parent_width);
+
+	m_borders.top = m_css_borders.top.width.calc_percent(parent_width);
+	m_borders.bottom = m_css_borders.bottom.width.calc_percent(parent_width);
 
 	m_padding.top = m_css_padding.top.calc_percent(parent_width);
 	m_padding.bottom = m_css_padding.bottom.calc_percent(parent_width);
@@ -365,7 +394,7 @@ int litehtml::box_model::box_block::render(int x, int y, int max_width, bool sec
 	int min_height = 0;
 	if (!m_css_min_height.is_predefined() && m_css_min_height.units() == css_units_percentage)
 	{
-		box_base::ptr parent(m_parent);
+		box_base::ptr parent = get_parent();
 		if (parent)
 		{
 			if (parent->get_predefined_height(block_height))

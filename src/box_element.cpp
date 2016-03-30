@@ -36,3 +36,14 @@ int litehtml::box_model::box_element::render(int x, int y, int max_width, bool s
 	update_element();
 	return ret;
 }
+
+int litehtml::box_model::box_element::calculate_base_line() const
+{
+	if (get_element_display() == display_inline_text)
+	{
+		font_metrics fm;
+		get_font(&fm);
+		return fm.base_line();
+	}
+	return 0;
+}

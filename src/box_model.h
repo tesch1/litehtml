@@ -103,11 +103,20 @@ namespace litehtml
 		protected:
 			static box_base::ptr create_block_box(const std::shared_ptr<element>& el, const std::shared_ptr<document>& doc);
 			static box_base::ptr create_inline_box(const std::shared_ptr<element>& el, const std::shared_ptr<document>& doc);
+
+			void push_child_box(const box_base::ptr& parent);
 		};
+
+		inline void box_base::push_child_box(const box_base::ptr& box)
+		{
+			m_children.push_back(box);
+			box->set_parent(shared_from_this());
+			box->init_from_element();
+		}
 
 		inline box_base::ptr box_base::get_parent() const
 		{
-			return box_base::ptr(m_parent);
+			return m_parent.lock();
 		}
 
 		inline void box_base::set_parent(const box_base::ptr& parent)

@@ -8,8 +8,7 @@ void litehtml::box_model::box_block_with_inlines::add_box(const box_base::ptr& b
 	if (box->get_type() == box_type_inline)
 	{
 		box->fetch_by_type(box_type_element, m_element_boxes);
-		m_children.push_back(box);
-		box->set_parent(shared_from_this());
+		push_child_box(box);
 	}
 	else
 	{
@@ -26,9 +25,8 @@ void litehtml::box_model::box_block_with_inlines::add_box(const box_base::ptr& b
 		if (add_anonymous_box)
 		{
 			box_base::ptr anon_box = std::make_shared<box_inline>(nullptr, std::shared_ptr<document>(m_document));
+			push_child_box(anon_box);
 			anon_box->add_box(box);
-			m_children.push_back(anon_box);
-			anon_box->set_parent(shared_from_this());
 		}
 	}
 }
@@ -83,16 +81,11 @@ int litehtml::box_model::box_block_with_inlines::render_children(int x, int y, i
 				box->move_to(ln->pos.width + box->content_margins_left(), 0);
 				box->update_element();
 
-				ln->elements.push_back(box);
-				ln->pos.width += box->width();
-				if (ln->pos.height < box->height())
-				{
-					ln->pos.height = box->height();
-				}
+				ln->add_box(box);
 			}
 		}
 	}
-	finish_line(&m_lines.back(), lineheight, fm);
+	m_lines.back().finish(lineheight, fm, m_text_align);
 	m_pos.height = ln->pos.bottom();
 	return ret_width;
 }
@@ -104,152 +97,12 @@ litehtml::box_model::box_line* litehtml::box_model::box_block_with_inlines::add_
 	if (!m_lines.empty())
 	{
 		new_top = m_lines.back().pos.bottom();
-		finish_line(&m_lines.back(), line_height, font);
+		m_lines.back().finish(line_height, font, m_text_align);
 	}
 	// TODO: This code must be changed to support floating boxes
-	m_lines.emplace_back(0, max_width, new_top);
+	m_lines.emplace_back(0, max_width, new_top, font.base_line(), line_height);
 	
 	return &m_lines.back();
-}
-
-void litehtml::box_model::box_block_with_inlines::finish_line(box_line* ln, int line_height, font_metrics& font)
-{
-	// remove last white space
-	if (!ln->elements.empty() && ln->elements.back()->is_white_space())
-	{
-		ln->pos.width -= ln->elements.back()->width();
-		ln->elements.pop_back();
-	}
-
-	int base_line = font.base_line();
-
-	int add_x = 0;
-	switch (m_text_align)
-	{
-	case text_align_right:
-		if (ln->pos.width < (ln->box_right - ln->box_left))
-		{
-			add_x = (ln->box_right - ln->box_left) - ln->pos.width;
-		}
-		break;
-	case text_align_center:
-		if (ln->pos.width < (ln->box_right - ln->box_left))
-		{
-			add_x = ((ln->box_right - ln->box_left) - ln->pos.width) / 2;
-		}
-		break;
-	default:
-		add_x = 0;
-	}
-
-	ln->pos.height = 0;
-	// find line box baseline and line-height
-	for (const auto& el : ln->elements)
-	{
-		if (el->get_element_display() == display_inline_text)
-		{
-			font_metrics fm;
-			el->get_font(&fm);
-			base_line = std::max(base_line, fm.base_line());
-			line_height = std::max(line_height, el->line_height());
-			ln->pos.height = std::max(ln->pos.height, fm.height);
-		}
-		el->move(add_x, 0);
-	}
-
-	if (ln->pos.height)
-	{
-		base_line += (line_height - ln->pos.height) / 2;
-	}
-
-	ln->pos.height = line_height;
-
-	int y1 = 0;
-	int y2 = ln->pos.height;
-
-	for (const auto& el : ln->elements)
-	{
-		if (el->get_element_display() == display_inline_text)
-		{
-			font_metrics fm;
-			el->get_font(&fm);
-			el->move_to(el->content_left(), ln->pos.height - base_line - fm.ascent);
-		}
-		else
-		{
-			switch (el->get_vertical_align())
-			{
-			case va_super:
-			case va_sub:
-			case va_baseline:
-				el->move_to(el->content_left(),
-					ln->pos.height - base_line - el->height() + el->calculate_base_line() + el->content_margins_top());
-				break;
-			case va_top:
-				el->move_to(el->content_left(),
-					y1 + el->content_margins_top());
-				break;
-			case va_text_top:
-				el->move_to(el->content_left(),
-					ln->pos.height - base_line - font.ascent + el->content_margins_top());
-				break;
-			case va_middle:
-				el->move_to(el->content_left(),
-					ln->pos.height - base_line - font.x_height / 2 - el->height() / 2 + el->content_margins_top());
-				break;
-			case va_bottom:
-				el->move_to(el->content_left(),
-					y2 - el->height() + el->content_margins_top());
-				break;
-			case va_text_bottom:
-				el->move_to(el->content_left(),
-					ln->pos.height - base_line + font.descent - el->height() + el->content_margins_top());
-				break;
-			}
-			y1 = std::min(y1, el->top());
-			y2 = std::max(y2, el->bottom());
-		}
-	}
-
-	for (const auto& el : ln->elements)
-	{
-		int pos_y = el->content_top() - y1;
-		if (el->get_element_display() != display_inline_text)
-		{
-			switch (el->get_vertical_align())
-			{
-			case va_top:
-				pos_y = el->content_margins_top();
-				break;
-			case va_bottom:
-				pos_y = (y2 - y1) - el->height() + el->content_margins_top();
-				break;
-			case va_baseline:
-				//TODO: process vertical align "baseline"
-				break;
-			case va_middle:
-				//TODO: process vertical align "middle"
-				break;
-			case va_sub:
-				//TODO: process vertical align "sub"
-				break;
-			case va_super:
-				//TODO: process vertical align "super"
-				break;
-			case va_text_bottom:
-				//TODO: process vertical align "text-bottom"
-				break;
-			case va_text_top:
-				//TODO: process vertical align "text-top"
-				break;
-			}
-		}
-		el->move_to(el->content_left(), pos_y);
-		el->apply_relative_shift(ln->box_right - ln->box_left);
-		el->update_element();
-	}
-	ln->pos.height = y2 - y1;
-	ln->base_line = (base_line - y1) - (ln->pos.height - line_height);
 }
 
 void litehtml::box_model::box_block_with_inlines::draw_children(uint_ptr hdc, int x, int y, const position* clip, draw_flag flag, int zindex)
@@ -310,3 +163,148 @@ int litehtml::box_model::box_block_with_inlines::calculate_base_line() const
 	}
 	return 0;
 }
+
+//////////////////////////////////////////////////////////////////////////
+
+void litehtml::box_model::box_line::add_box(const box_base::ptr& box)
+{
+	// find maximum baseline and line height
+	// for elements with style "vertical-align=baseline"
+	if (box->get_vertical_align() == va_baseline)
+	{
+		base_line = std::max(base_line, box->calculate_base_line());
+		line_height = std::max(line_height, box->line_height());
+		pos.width += box->width();
+		pos.height = std::max(pos.height, box->height());
+	}
+
+	elements.push_back(box);
+}
+
+void litehtml::box_model::box_line::finish(int lineheight, font_metrics& font, text_align align)
+{
+	// remove last white space
+	if (!elements.empty() && elements.back()->is_white_space())
+	{
+		pos.width -= elements.back()->width();
+		elements.pop_back();
+	}
+
+	int add_x = 0;
+	switch (align)
+	{
+	case text_align_right:
+		if (pos.width < (box_right - box_left))
+		{
+			add_x = (box_right - box_left) - pos.width;
+		}
+		break;
+	case text_align_center:
+		if (pos.width < (box_right - box_left))
+		{
+			add_x = ((box_right - box_left) - pos.width) / 2;
+		}
+		break;
+	default:
+		add_x = 0;
+		break;
+	}
+
+	for (const auto& el : elements)
+	{
+		el->move(add_x, 0);
+	}
+
+	if (pos.height)
+	{
+		base_line += (lineheight - pos.height) / 2;
+	}
+
+	pos.height = lineheight;
+
+	int y1 = 0;
+	int y2 = pos.height;
+
+	for (const auto& el : elements)
+	{
+		if (el->get_element_display() == display_inline_text)
+		{
+			font_metrics fm;
+			el->get_font(&fm);
+			el->move_to(el->content_left(), pos.height - base_line - fm.ascent);
+		}
+		else
+		{
+			switch (el->get_vertical_align())
+			{
+			case va_top:
+				el->move_to(el->content_left(),
+					y1 + el->content_margins_top());
+				break;
+			case va_text_top:
+				el->move_to(el->content_left(),
+					pos.height - base_line - font.ascent + el->content_margins_top());
+				break;
+			case va_middle:
+				el->move_to(el->content_left(),
+					pos.height - base_line - font.x_height / 2 - el->height() / 2 + el->content_margins_top());
+				break;
+			case va_bottom:
+				el->move_to(el->content_left(),
+					y2 - el->height() + el->content_margins_top());
+				break;
+			case va_text_bottom:
+				el->move_to(el->content_left(),
+					pos.height - base_line + font.descent - el->height() + el->content_margins_top());
+				break;
+			default:
+				el->move_to(el->content_left(),
+					pos.height - base_line - el->height() + el->calculate_base_line() + el->content_margins_top());
+				break;
+			}
+			y1 = std::min(y1, el->top());
+			y2 = std::max(y2, el->bottom());
+		}
+	}
+
+	for (const auto& el : elements)
+	{
+		int pos_y = el->content_top() - y1;
+		if (el->get_element_display() != display_inline_text)
+		{
+			switch (el->get_vertical_align())
+			{
+			case va_top:
+				pos_y = el->content_margins_top();
+				break;
+			case va_bottom:
+				pos_y = (y2 - y1) - el->height() + el->content_margins_top();
+				break;
+			case va_baseline:
+				//TODO: process vertical align "baseline"
+				break;
+			case va_middle:
+				//TODO: process vertical align "middle"
+				break;
+			case va_sub:
+				//TODO: process vertical align "sub"
+				break;
+			case va_super:
+				//TODO: process vertical align "super"
+				break;
+			case va_text_bottom:
+				//TODO: process vertical align "text-bottom"
+				break;
+			case va_text_top:
+				//TODO: process vertical align "text-top"
+				break;
+			}
+		}
+		el->move_to(el->content_left(), pos_y);
+		el->apply_relative_shift(box_right - box_left);
+		el->update_element();
+	}
+	pos.height = y2 - y1;
+	base_line = (base_line - y1) - (pos.height - lineheight);
+}
+

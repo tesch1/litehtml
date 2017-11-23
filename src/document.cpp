@@ -204,7 +204,7 @@ litehtml::uint_ptr litehtml::document::add_font( const tchar_t* name, int size, 
 			}
 		}
 
-		font_item fi= {0};
+		font_item fi= {0, {}};
 
 		fi.font = m_container->create_font(name, size, fw, fs, decor, &fi.metrics);
 		m_fonts[key] = fi;

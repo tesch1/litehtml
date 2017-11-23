@@ -6,7 +6,8 @@ enable_language (C)
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message (STATUS "No build type selected, default to Release")
-  set (CMAKE_BUILD_TYPE "Release")
+  #set (CMAKE_BUILD_TYPE "Release")
+  set (CMAKE_BUILD_TYPE "Debug")
 endif()
 
 if (CMAKE_VERSION VERSION_LESS "3.1")
@@ -88,3 +89,8 @@ if (ETAGS)
     )
   add_custom_target (etags DEPENDS tags)
 endif (ETAGS)
+
+#
+# Examples
+#
+add_subdirectory (examples)

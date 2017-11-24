@@ -16,12 +16,15 @@
 #include <fstream>
 #define CXXOPTS_NO_RTTI
 #include "cxxopts.hpp"
+#include "cxx_utils.hpp"
 #include "sdl-container.h"
 #include "context.h"
 #include "document.h"
 
 #include <SDL2/SDL.h>
-
+#include "ft2build.h"
+#include FT_FREETYPE_H
+#include FT_SIZES_H
 
 using namespace litehtml;
 typedef litehtml::tstring string;
@@ -41,53 +44,11 @@ static bool file_to_string(const string & filename, string & dst)
 
 class browser_window {
 public:
-  browser_window(string master_css)
+  browser_window()
   {
-    // load the master css for this window
-    _context.load_master_stylesheet(master_css.c_str());
   }
 
-  // create & parse the document
-  bool load_str(string html)
-  {
-    _doc = litehtml::document::createFromString(html.c_str(), &_painter, &_context, _user_styles);
-
-    // render
-    int best_width = _doc->render(_width);
-
-    // size of rendered document:
-    std::cout << "frame: " << _frame << " width: " << _doc->width() << " height: " << _doc->height()
-              << " best width: " << best_width << "\n";
-
-    return _doc.get() != nullptr;
-  }
-
-  // nothing yet
-  bool load_url(string url)
-  {
-    return false;
-  }
-
-  // draw the document
-  bool draw()
-  {
-    if (!_doc || !_renderer)
-      return false;
-
-    // draw
-    uint_ptr hdc = (uint_ptr)_renderer;
-    position * clip = nullptr;
-    int left = 0, top = 0;
-
-    _doc->draw(hdc, left, top, clip);
-    SDL_RenderPresent(_renderer);
-
-    _frame++;
-
-    return true;
-  }
-
-  bool show()
+  bool show(string master_css)
   {
     if (_main_window)
       return false;
@@ -133,8 +94,77 @@ public:
     std::cout << "window : " << _width << " x " << _height
               << " ratios: " << _xratio << "x" << _yratio << "\n";
 
-    //draw(); ?
+    // load the master css for this window
+    _context.load_master_stylesheet(master_css.c_str());
 
+    //draw(); ?
+    return true;
+  }
+
+  // create & parse the document
+  bool load_str(const string & urlbase, const string & html)
+  {
+    if (!_renderer)
+      return false;
+
+    // remember where the file was
+    _painter.set_base_url(urlbase.c_str());
+
+    // make the doc
+    _doc = litehtml::document::createFromString(html.c_str(), &_painter, &_context, _user_styles);
+
+    // render
+    int best_width = _doc->render(_width);
+
+    // size of rendered document:
+    std::cout << "frame: " << _frame << " width: " << _doc->width() << " height: " << _doc->height()
+              << " best width: " << best_width << "\n";
+
+    return _doc.get() != nullptr;
+  }
+
+  // nothing yet
+  bool load_url(const string & url)
+  {
+    string html;
+    {
+      string filename = url;
+      std::cout << "loading html file: " << filename << "\n";
+      if (!file_to_string(filename, html))
+        return -1;
+    }
+
+    load_str(cxx_dirname(url), html);
+
+    return false;
+  }
+
+  // draw the document
+  bool draw()
+  {
+    if (!_doc || !_renderer)
+      return false;
+
+    // draw
+    uint_ptr hdc = (uint_ptr)_renderer;
+    position * clip = nullptr;
+    int left = 0, top = 0;
+
+    /* Select the color for drawing. */
+    SDL_SetRenderDrawColor(_renderer, 64, 64, 64, 255);
+
+    SDL_RenderClear(_renderer);
+    _doc->draw(hdc, left, top, clip);
+    SDL_RenderPresent(_renderer);
+
+    std::cout << "frame: " << _frame << "\n";
+    _frame++;
+
+    return true;
+  }
+
+  void eventloop()
+  {
     SDL_Event event;
     _done = false;
     do {
@@ -142,8 +172,6 @@ public:
       SDL_WaitEvent(&event);
       handle_event(event);
     } while (!_done);
-
-    return true;
   }
 
   void queue_redraw(Sint32 code = 0, void * data1 = nullptr, void * data2 = nullptr)
@@ -206,9 +234,31 @@ public:
     case SDL_FINGERUP:
       break;
     case SDL_MOUSEMOTION:
+      if (_doc) {
+        position::vector redraw_boxes;
+        int client_x = event.motion.x;
+        int client_y = event.motion.y;
+        if (_doc->on_mouse_over(event.motion.x, event.motion.y, client_x, client_y, redraw_boxes))
+          queue_redraw();
+      }
       break;
     case SDL_MOUSEBUTTONUP:
+      if (_doc) {
+        position::vector redraw_boxes;
+        int client_x = event.motion.x;
+        int client_y = event.motion.y;
+        if (_doc->on_lbutton_up(event.motion.x, event.motion.y, client_x, client_y, redraw_boxes))
+          queue_redraw();
+      }
+      break;
     case SDL_MOUSEBUTTONDOWN:
+      if (_doc) {
+        position::vector redraw_boxes;
+        int client_x = event.motion.x;
+        int client_y = event.motion.y;
+        if (_doc->on_lbutton_down(event.motion.x, event.motion.y, client_x, client_y, redraw_boxes))
+          queue_redraw();
+      }
       break;
     case SDL_MOUSEWHEEL:
       break;
@@ -246,6 +296,11 @@ public:
       case SDL_WINDOWEVENT_ENTER:
         break;
       case SDL_WINDOWEVENT_LEAVE:
+        if (_doc) {
+          position::vector redraw_boxes;
+          if (_doc->on_mouse_leave(redraw_boxes))
+            queue_redraw();
+        }
         break;
       case SDL_WINDOWEVENT_FOCUS_GAINED:
         break;
@@ -291,14 +346,28 @@ private:
   int _width = 0;
   int _height = 0;
   int _frame = 0;
-  float _xratio;
-  float _yratio;
+  int _scrollx = 0;
+  int _scrolly = 0;
+  float _xratio = 1;
+  float _yratio = 1;
 
   litehtml::context _context;
   sdl_doc_container _painter;
   litehtml::css * _user_styles = nullptr;
   litehtml::document::ptr _doc;
 };
+
+FT_Library g_freetype;
+static void done_freetype()
+{
+  FT_Done_FreeType(g_freetype);
+  g_freetype = nullptr;
+}
+
+static void init_freetype()
+{
+  FT_Init_FreeType(&g_freetype);
+}
 
 int main(int argc, char * argv[])
 {
@@ -325,6 +394,11 @@ int main(int argc, char * argv[])
     return -1;
   }
 
+  if (options.count("help")) {
+    std::cout << options.help() << "\n";
+    return 0;
+  }
+
   // Init SDL
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
     std::cerr << "Unable to initialize SDL: " << SDL_GetError() << "\n";
@@ -332,16 +406,12 @@ int main(int argc, char * argv[])
   }
   atexit(SDL_Quit);
 
-  // load master stylesheet
-  string stylesheet;
-  {
-    string filename = options["stylesheet"].as<string>();
-    if (!file_to_string(filename, stylesheet))
-      return -1;
-  }
+  // init the font system
+  init_freetype();
+  atexit(&done_freetype);
 
   // create window with master stylesheet
-  browser_window window(stylesheet);
+  browser_window window;
 
   // set the window size
   if (options.count("size")) {
@@ -353,18 +423,21 @@ int main(int argc, char * argv[])
     }
   }
 
-  // load the page
-  string html;
+  // open the window
+  // load master stylesheet
+  string stylesheet;
   {
-    string filename = options["page"].as<string>();
-    std::cout << "loading html file: " << filename << "\n";
-    if (!file_to_string(filename, html))
+    string filename = options["stylesheet"].as<string>();
+    if (!file_to_string(filename, stylesheet))
       return -1;
   }
-  window.load_str(html);
+  window.show(stylesheet);
 
-  // start ths show...
-  window.show();
+  // load the page
+  window.load_url(options["page"].as<string>());
+
+  // run ths show...
+  window.eventloop();
 
   return 0;
 }

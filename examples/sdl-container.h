@@ -16,15 +16,20 @@
 #pragma once
 #include "html.h"
 #include <SDL2/SDL.h>
+#include <map>
 
 class sdl_doc_container : public litehtml::document_container
 {
  private:
   SDL_Renderer * _renderer = nullptr;
+  std::map<litehtml::tstring, std::pair<SDL_Surface *, SDL_Texture *> > _images;
+  litehtml::tstring _base_url;
 
  public:
   sdl_doc_container();
   void set_renderer(SDL_Renderer * renderer);
+  void setrendererdrawcolor(const litehtml::web_color & color);
+  void make_url(const litehtml::tchar_t * src, const litehtml::tchar_t * baseurl, litehtml::tstring & url);
 
   // The litehtml 'document_container' painting interface...
   virtual litehtml::uint_ptr create_font(const litehtml::tchar_t * faceName, int size, int weight,

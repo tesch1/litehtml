@@ -20,7 +20,8 @@ else ()
   set (CMAKE_CXX_STANDARD 11)
 endif ()
 
-set (SOURCE_LITEHTML src/background.cpp
+set (SOURCE_LITEHTML
+  src/background.cpp
   src/box.cpp
   src/context.cpp
   src/css_length.cpp

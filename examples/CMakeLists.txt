@@ -30,7 +30,9 @@ endif ()
 
 # configure the thirdparty build dir
 set (CMD_ARGS ${CMD_ARGS} -G${GENERATOR_STRING})
-set (CMD_ARGS ${CMD_ARGS} -DANDROID=${ANDROID})
+if (ANDROID)
+  set (CMD_ARGS ${CMD_ARGS} -DANDROID=${ANDROID})
+endif (ANDROID)
 set (CMD_ARGS ${CMD_ARGS} -DCMAKE_CONFIGURATION_TYPES=${CMAKE_CONFIGURATION_TYPES})
 set (CMD_ARGS ${CMD_ARGS} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
 set (CMD_ARGS ${CMD_ARGS} -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM})
@@ -84,7 +86,7 @@ set (BROWSER_SRCS
   sdl-container.cpp)
 
 add_executable (browser ${BROWSER_SRCS})
-target_link_libraries (browser litehtml)
+target_link_libraries (browser litehtml freetype)
 target_link_libraries (browser ${SDL2_LIBRARIES})
 target_include_directories (browser PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_include_directories (browser PUBLIC ${SDL2_INCLUDE_DIRS})

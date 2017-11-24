@@ -15,12 +15,18 @@
  */
 #pragma once
 #include "html.h"
+#include <SDL2/SDL.h>
 
 class sdl_doc_container : public litehtml::document_container
 {
-public:
-  sdl_doc_container();
+ private:
+  SDL_Renderer * _renderer = nullptr;
 
+ public:
+  sdl_doc_container();
+  void set_renderer(SDL_Renderer * renderer);
+
+  // The litehtml 'document_container' painting interface...
   virtual litehtml::uint_ptr create_font(const litehtml::tchar_t * faceName, int size, int weight,
                                          litehtml::font_style italic, unsigned int decoration,
                                          litehtml::font_metrics * fm);

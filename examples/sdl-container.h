@@ -18,18 +18,26 @@
 #include <SDL2/SDL.h>
 #include <map>
 
+bool file_to_string(const litehtml::tstring & filename, litehtml::tstring & dst);
+
 class sdl_doc_container : public litehtml::document_container
 {
  private:
   SDL_Renderer * _renderer = nullptr;
   std::map<litehtml::tstring, std::pair<SDL_Surface *, SDL_Texture *> > _images;
   litehtml::tstring _base_url;
+  int _x = 0;
+  int _y = 0;
 
  public:
   sdl_doc_container();
+  ~sdl_doc_container();
+
   void set_renderer(SDL_Renderer * renderer);
-  void setrendererdrawcolor(const litehtml::web_color & color);
+  void set_renderer_draw_color(const litehtml::web_color & color);
   void make_url(const litehtml::tchar_t * src, const litehtml::tchar_t * baseurl, litehtml::tstring & url);
+  void scroll_delta(int x, int y) { _x += x; _y += y; }
+  void scroll_set(int x, int y) { _x = x; _y = y; }
 
   // The litehtml 'document_container' painting interface...
   virtual litehtml::uint_ptr create_font(const litehtml::tchar_t * faceName, int size, int weight,

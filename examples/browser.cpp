@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */ 
-#include <fstream>
 #define CXXOPTS_NO_RTTI
 #include "cxxopts.hpp"
 #include "cxx_utils.hpp"
@@ -28,19 +27,6 @@
 
 using namespace litehtml;
 typedef litehtml::tstring string;
-
-static bool file_to_string(const string & filename, string & dst)
-{
-  std::ifstream file(filename.c_str());
-  if (!file) {
-    std::cerr << "unable to open '" << filename << "'\n";
-    return false;
-  }
-  std::string str((std::istreambuf_iterator<char>(file)),
-                  std::istreambuf_iterator<char>());
-  dst = str;
-  return true;
-}
 
 class browser_window {
 public:
@@ -147,14 +133,19 @@ public:
 
     // draw
     uint_ptr hdc = (uint_ptr)_renderer;
-    position * clip = nullptr;
-    int left = 0, top = 0;
+    litehtml::position clip;
+    int left = -_scrollx;
+    int top = -_scrolly;
+    clip.width = 1024;
+    clip.height = 768;
+    clip.x = 0;
+    clip.y = 0;
 
-    /* Select the color for drawing. */
-    SDL_SetRenderDrawColor(_renderer, 64, 64, 64, 255);
+    /* Select the color for background clearing. */
+    SDL_SetRenderDrawColor(_renderer, 164, 164, 164, 255);
 
     SDL_RenderClear(_renderer);
-    _doc->draw(hdc, left, top, clip);
+    _doc->draw(hdc, left, top, &clip);
     SDL_RenderPresent(_renderer);
 
     std::cout << "frame: " << _frame << "\n";
@@ -236,8 +227,8 @@ public:
     case SDL_MOUSEMOTION:
       if (_doc) {
         position::vector redraw_boxes;
-        int client_x = event.motion.x;
-        int client_y = event.motion.y;
+        int client_x = event.motion.x + _scrollx;
+        int client_y = event.motion.y + _scrolly;
         if (_doc->on_mouse_over(event.motion.x, event.motion.y, client_x, client_y, redraw_boxes))
           queue_redraw();
       }
@@ -245,8 +236,8 @@ public:
     case SDL_MOUSEBUTTONUP:
       if (_doc) {
         position::vector redraw_boxes;
-        int client_x = event.motion.x;
-        int client_y = event.motion.y;
+        int client_x = event.motion.x + _scrollx;
+        int client_y = event.motion.y + _scrolly;
         if (_doc->on_lbutton_up(event.motion.x, event.motion.y, client_x, client_y, redraw_boxes))
           queue_redraw();
       }
@@ -254,13 +245,25 @@ public:
     case SDL_MOUSEBUTTONDOWN:
       if (_doc) {
         position::vector redraw_boxes;
-        int client_x = event.motion.x;
-        int client_y = event.motion.y;
+        int client_x = event.motion.x + _scrollx;
+        int client_y = event.motion.y + _scrolly;
         if (_doc->on_lbutton_down(event.motion.x, event.motion.y, client_x, client_y, redraw_boxes))
           queue_redraw();
       }
       break;
-    case SDL_MOUSEWHEEL:
+    case SDL_MOUSEWHEEL: {
+      if (_doc) {
+        _scrollx += event.wheel.x * 10;
+        _scrolly += event.wheel.y * 10;
+        int width, height;
+        SDL_GetRendererOutputSize(_renderer, &width, &height);
+        _scrollx = std::max(0, std::min(_doc->width() - width, _scrollx));
+        _scrolly = std::max(0, std::min(_doc->height() - height, _scrolly));
+        _painter.scroll_set(_scrollx, _scrolly);
+        queue_redraw();
+        std::cout << "scrolly:" << _scrolly << "," << _scrollx << "\n";
+      }
+    }                          
       break;
     case SDL_MULTIGESTURE:
       break;
@@ -281,9 +284,14 @@ public:
       case SDL_WINDOWEVENT_RESIZED:
       case SDL_WINDOWEVENT_SIZE_CHANGED: {
         int width, height;
-        SDL_GL_GetDrawableSize(_main_window, &width, &height);
+        SDL_GetRendererOutputSize(_renderer, &width, &height);
+        //SDL_GL_GetDrawableSize(_main_window, &width, &height);
         _xratio = (float)width / event.window.data1;
         _yratio = (float)height / event.window.data2;
+
+        _doc->media_changed();
+        _doc->render(width);
+
         queue_redraw();
       }
         break;
@@ -426,7 +434,8 @@ int main(int argc, char * argv[])
   // open the window
   // load master stylesheet
   string stylesheet;
-  {
+  file_to_string("../include/master.css", stylesheet);
+  if (options.count("stylesheet")) {
     string filename = options["stylesheet"].as<string>();
     if (!file_to_string(filename, stylesheet))
       return -1;

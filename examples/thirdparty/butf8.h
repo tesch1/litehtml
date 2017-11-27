@@ -5,66 +5,61 @@
 #pragma once
 
 #include <stdint.h>
-#if 0
-/* Decode the next character, C, from BUF, reporting errors in E.
- *
- * Since this is a branchless decoder, four bytes will be read from the
- * buffer regardless of the actual length of the next character. This
- * means the buffer _must_ have at least three bytes of zero padding
- * following the end of the data stream.
- *
- * Errors are reported in E, which will be non-zero if the parsed
- * character was somehow invalid: invalid byte sequence, non-canonical
- * encoding, or a surrogate half.
- *
- * The function returns a pointer to the next character. When an error
- * occurs, this pointer will be a guess that depends on the particular
- * error, but it will always advance at least one byte.
- */
-static void *
-utf8_decode(void *buf, uint32_t *c, int *e)
+#if 1
+uint32_t getUTF8Next(const char * & p)
 {
-    static const char lengths[] = {
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 3, 3, 4, 0
-    };
-    static const int masks[]  = {0x00, 0x7f, 0x1f, 0x0f, 0x07};
-    static const uint32_t mins[] = {4194304, 0, 128, 2048, 65536};
-    static const int shiftc[] = {0, 18, 12, 6, 0};
-    static const int shifte[] = {0, 6, 4, 2, 0};
+  // Copyright (c) 2008-2010 Bjoern Hoehrmann <bjoern@hoehrmann.de>
+  // See http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
+  static const uint32_t UTF8_ACCEPT = 0;
+  //static const uint32_t UTF8_REJECT = 12;
 
-    unsigned char *s = (unsigned char *)buf;
-    int len = lengths[s[0] >> 3];
+  static const uint8_t utf8d[] = {
+    // The first part of the table maps bytes to character classes that
+    // to reduce the size of the transition table and create bitmasks.
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,  9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+    7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,  7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+    8,8,2,2,2,2,2,2,2,2,2,2,2,2,2,2,  2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+    10,3,3,3,3,3,3,3,3,3,3,3,3,4,3,3, 11,6,6,6,5,8,8,8,8,8,8,8,8,8,8,8,
 
-    /* Compute the pointer to the next character early so that the next
-     * iteration can start working on the next character. Neither Clang
-     * nor GCC figure out this reordering on their own.
-     */
-    unsigned char *next = s + len + !len;
+    // The second part is a transition table that maps a combination
+    // of a state of the automaton and a character class to a state.
+    0,12,24,36,60,96,84,12,12,12,48,72, 12,12,12,12,12,12,12,12,12,12,12,12,
+    12, 0,12,12,12,12,12, 0,12, 0,12,12, 12,24,12,12,12,12,12,24,12,24,12,12,
+    12,12,12,12,12,12,12,24,12,12,12,12, 12,24,12,12,12,12,12,12,12,24,12,12,
+    12,12,12,12,12,12,12,36,12,36,12,12, 12,36,12,12,12,12,12,36,12,36,12,12,
+    12,36,12,12,12,12,12,12,12,12,12,12,
+  };
 
-    /* Assume a four-byte character and load four bytes. Unused bits are
-     * shifted out.
-     */
-    *c  = (uint32_t)(s[0] & masks[len]) << 18;
-    *c |= (uint32_t)(s[1] & 0x3f) << 12;
-    *c |= (uint32_t)(s[2] & 0x3f) <<  6;
-    *c |= (uint32_t)(s[3] & 0x3f) <<  0;
-    *c >>= shiftc[len];
+  auto decode = [](uint32_t* state, uint32_t* codep, uint32_t byte) -> uint32_t {
+    uint32_t type = utf8d[byte];
 
-    /* Accumulate the various error conditions. */
-    *e  = (*c < mins[len]) << 6; // non-canonical encoding
-    *e |= ((*c >> 11) == 0x1b) << 7;  // surrogate half?
-    *e |= (*c > 0x10FFFF) << 8;  // out of range?
-    *e |= (s[1] & 0xc0) >> 2;
-    *e |= (s[2] & 0xc0) >> 4;
-    *e |= (s[3]       ) >> 6;
-    *e ^= 0x2a; // top two bits of each tail byte correct?
-    *e >>= shifte[len];
+    *codep = (*state != UTF8_ACCEPT) ?
+    (byte & 0x3fu) | (*codep << 6) :
+    (0xff >> type) & (byte);
 
-    return next;
+    *state = utf8d[256 + *state + type];
+    return *state;
+  };
+
+  uint32_t codepoint;
+  uint32_t state = 0;
+  const uint8_t * s = (const uint8_t *)p;
+  for (; *s; ++s)
+    if (UTF8_ACCEPT == decode(&state, &codepoint, *s)) {
+      p = (const char *)s;
+      return codepoint;
+    }
+
+  //if (state != UTF8_ACCEPT)
+  //  printf("The string is not well-formed\n");
+  return 0;
 }
 
-#endif
+#else
 
 #define IS_IN_RANGE(c, f, l)    (((c) >= (f)) && ((c) <= (l)))
 uint32_t getUTF8Next(const char * & p)
@@ -162,3 +157,4 @@ uint32_t getUTF8Next(const char * & p)
 	return uc;
 }
 #undef IS_IN_RANGE
+#endif

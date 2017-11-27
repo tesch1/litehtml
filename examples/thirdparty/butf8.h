@@ -5,13 +5,13 @@
 #pragma once
 
 #include <stdint.h>
-#if 1
+#if 0
 uint32_t getUTF8Next(const char * & p)
 {
   // Copyright (c) 2008-2010 Bjoern Hoehrmann <bjoern@hoehrmann.de>
   // See http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
   static const uint32_t UTF8_ACCEPT = 0;
-  //static const uint32_t UTF8_REJECT = 12;
+  static const uint32_t UTF8_REJECT = 12;
 
   static const uint8_t utf8d[] = {
     // The first part of the table maps bytes to character classes that
@@ -45,14 +45,19 @@ uint32_t getUTF8Next(const char * & p)
     return *state;
   };
 
-  uint32_t codepoint;
+  uint32_t codepoint = 0;
   uint32_t state = 0;
   const uint8_t * s = (const uint8_t *)p;
-  for (; *s; ++s)
-    if (UTF8_ACCEPT == decode(&state, &codepoint, *s)) {
+  for (; *s; ++s) {
+    switch (decode(&state, &codepoint, *s)) {
+    case UTF8_ACCEPT:
       p = (const char *)s;
       return codepoint;
+    case UTF8_REJECT:
+      printf("The string is not well-formed\n");
+      return 0;
     }
+  }
 
   //if (state != UTF8_ACCEPT)
   //  printf("The string is not well-formed\n");
